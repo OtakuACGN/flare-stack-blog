@@ -1,0 +1,35 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* ==========================================================================
+   🌟 极客降维打击：强行隐藏 Next.js 16 开发环境的报错遮罩层与 Issue 提示红点
+   用来解决 Keystatic 等第三方老牌 CMS 库在 Turbopack 下的 href="" 静态审查冲突
+   ========================================================================== */
+nextjs-portal,
+#nextjs-__webpack_toast_container__ {
+  display: none !important;
+}
