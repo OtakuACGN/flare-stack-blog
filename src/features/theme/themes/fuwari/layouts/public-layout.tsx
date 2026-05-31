@@ -6,7 +6,8 @@ import { Sidebar } from "../components/sidebar";
 import { Footer } from "./footer";
 import { MobileMenu } from "./mobile-menu";
 import { Navbar } from "./navbar";
-import { BgmPlayer } from "../components/control/bgm-player"; // 👈 1. 引入刚刚写好的播放器
+// 🎯 核心修复：根据你的物理存放位置，使用精确的路径别名引入
+import { BgmPlayer } from "@/components/content/bgm-player"; 
 
 const BANNER_HEIGHT_HOME = 65;
 const BANNER_HEIGHT_PAGE = 35;
@@ -96,7 +97,7 @@ export function PublicLayout({
           {/* 返回顶部按钮 */}
           <BackToTop />
 
-          {/* 🎵 2. 全局网易云吸底背景音乐播放器 */}
+          {/* 🎵 全局网易云吸底背景音乐播放器 */}
           <BgmPlayer />
         </div>
       </div>
