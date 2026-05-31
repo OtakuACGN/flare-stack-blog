@@ -27,6 +27,7 @@ export function PublicLayout({
 
   return (
     <div className="relative min-h-screen bg-(--fuwari-page-bg) transition-colors">
+      {/* 📱 移动端抽屉菜单 */}
       <MobileMenu
         navOptions={navOptions}
         isOpen={isMenuOpen}
@@ -35,7 +36,7 @@ export function PublicLayout({
         logout={logout}
       />
 
-      {/* Top row: Navbar - sticky */}
+      {/* 🧭 顶部导航栏（粘性定位） */}
       <div className="sticky top-0 z-50 pointer-events-none">
         <div className="pointer-events-auto max-w-(--fuwari-page-width) mx-auto px-0 md:px-4">
           <Navbar
@@ -48,20 +49,20 @@ export function PublicLayout({
         </div>
       </div>
 
-      {/* Banner - full width background */}
+      {/* 🖼 *Banner 背景图（黄金比例裁剪版） */}
       <div
-        className="absolute left-0 right-0 top-0 z-10 overflow-hidden transition-[height] duration-300 ease-in-out"
+        className="absolute left-0 right-0 top-0 z-10 overflow-hidden transition-[height] duration-300 ease-in-out select-none"
         style={{ height: `${bannerHeightVh}vh` }}
       >
         <img
           src={siteConfig.theme.fuwari.homeBg}
           alt="banner"
           fetchPriority="high"
-          className="w-full h-full object-cover object-center"
+          className="w-full h-full object-cover object-[50%_25%]"
         />
       </div>
 
-      {/* Main content - overlaps banner by MAIN_OVERLAP_REM */}
+      {/* 📄 主内容区域 */}
       <div
         className="relative z-30 transition-[margin-top] duration-300 ease-in-out"
         style={{
@@ -72,15 +73,15 @@ export function PublicLayout({
           className="relative mx-auto px-0 md:px-4 pb-8 grid grid-cols-1 lg:grid-cols-[17.5rem_1fr] gap-4"
           style={{ maxWidth: "var(--fuwari-page-width)" }}
         >
-          {/* Sidebar Column */}
+          {/* Sidebar */}
           <Sidebar className="order-2 lg:order-1" />
 
-          {/* Main Content Column */}
+          {/* Main content */}
           <main className="order-1 lg:order-2 flex flex-col gap-4 min-w-0">
             {children}
           </main>
 
-          {/* Footer Column (Desktop: below main, Mobile: below sidebar) */}
+          {/* Footer */}
           <div
             className="order-3 lg:col-start-2 fuwari-onload-animation mt-auto"
             style={{ animationDelay: "250ms" }}
@@ -88,6 +89,7 @@ export function PublicLayout({
             <Footer navOptions={navOptions} />
           </div>
 
+          {/* 返回顶部按钮 */}
           <BackToTop />
         </div>
       </div>
