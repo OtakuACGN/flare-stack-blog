@@ -26,7 +26,7 @@ export function PublicLayout({
   const bannerHeightVh = isHomePage ? BANNER_HEIGHT_HOME : BANNER_HEIGHT_PAGE;
 
   return (
-    <div className="relative min-h-screen bg-(--fuwari-page-bg) transition-colors">
+    <div className="relative min-h-screen bg-[var(--fuwari-page-bg)] transition-colors">
       {/* 📱 移动端抽屉菜单 */}
       <MobileMenu
         navOptions={navOptions}
@@ -38,7 +38,7 @@ export function PublicLayout({
 
       {/* 🧭 顶部导航栏（粘性定位） */}
       <div className="sticky top-0 z-50 pointer-events-none">
-        <div className="pointer-events-auto max-w-(--fuwari-page-width) mx-auto px-0 md:px-4">
+        <div className="pointer-events-auto max-w-[var(--fuwari-page-width)] mx-auto px-0 md:px-4">
           <Navbar
             navOptions={navOptions}
             onMenuClick={() => setIsMenuOpen(true)}
@@ -49,7 +49,7 @@ export function PublicLayout({
         </div>
       </div>
 
-      {/* 🖼 *Banner 背景图（黄金比例裁剪版） */}
+      {/* 🖼️ Banner 背景图（动态黄金焦点优化版） */}
       <div
         className="absolute left-0 right-0 top-0 z-10 overflow-hidden transition-[height] duration-300 ease-in-out select-none"
         style={{ height: `${bannerHeightVh}vh` }}
@@ -58,7 +58,13 @@ export function PublicLayout({
           src={siteConfig.theme.fuwari.homeBg}
           alt="banner"
           fetchPriority="high"
-          className="w-full h-full object-cover object-[50%_25%]"
+          className="w-full h-full object-cover transition-[object-position] duration-300 ease-in-out"
+          style={{
+            // 🎯 核心优化：
+            // 水平轴死锁 40%：确保窄屏下左侧的久远永远在屏幕内，同时带鱼屏下保留中间的哈克
+            // 垂直轴动态计算：首页(65vh)时重心在 35% 尽显雪山与双人构图；普通页(35vh)时重心上提至 20%，死锁头部，防止被卡片推上来挡住
+            objectPosition: isHomePage ? "40% 35%" : "40% 20%",
+          }}
         />
       </div>
 
