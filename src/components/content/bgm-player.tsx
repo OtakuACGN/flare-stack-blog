@@ -1,6 +1,5 @@
 import { useEffect } from "react";
 
-// 💡 扩展全局 JSX 声明，彻底解决 TypeScript 报未知标签错误，确保 Cloudflare 编译大绿灯
 declare global {
   namespace JSX {
     interface IntrinsicElements {
@@ -23,26 +22,22 @@ declare global {
 
 export function BgmPlayer() {
   useEffect(() => {
-    // 注入 APlayer 官方标准样式
     const link = document.createElement("link");
     link.rel = "stylesheet";
     link.href = "https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css";
     document.head.appendChild(link);
 
-    // 注入 APlayer 核心脚本
     const script1 = document.createElement("script");
     script1.src = "https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js";
     script1.async = true;
     document.body.appendChild(script1);
 
-    // 注入 MetingJS 歌单解析引擎
     const script2 = document.createElement("script");
     script2.src = "https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js";
     script2.async = true;
     document.body.appendChild(script2);
 
     return () => {
-      // 组件销毁时清理副作用
       link.remove();
       script1.remove();
       script2.remove();
@@ -51,7 +46,6 @@ export function BgmPlayer() {
 
   return (
     <>
-      {/* 🎵 完美绑定你的专属网易云歌单 */}
       <meting-js
         server="netease"
         type="playlist"
@@ -66,7 +60,6 @@ export function BgmPlayer() {
         list-folded="true"
       />
 
-      {/* 🎨 Fuwari 博客主题皮肤完美融合样式 */}
       <style>{`
         .aplayer.aplayer-fixed {
           z-index: 100 !important;
