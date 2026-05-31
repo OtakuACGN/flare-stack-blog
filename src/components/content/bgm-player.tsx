@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-// 💡 扩展 JSX 声明，防止 TypeScript 报未知标签错误，确保 Cloudflare 编译通过
+// 💡 扩展全局 JSX 声明，彻底解决 TypeScript 报未知标签错误，确保 Cloudflare 编译大绿灯
 declare global {
   namespace JSX {
     interface IntrinsicElements {
@@ -42,7 +42,7 @@ export function BgmPlayer() {
     document.body.appendChild(script2);
 
     return () => {
-      // 组件销毁时清理副作用，保持页面干净
+      // 组件销毁时清理副作用
       link.remove();
       script1.remove();
       script2.remove();
@@ -101,7 +101,6 @@ export function BgmPlayer() {
         .aplayer .aplayer-info .aplayer-music .aplayer-author {
           color: var(--fuwari-text-mute) !important;
         }
-        /* 避免移动端被全面遮挡，可微调小图标大小 */
         @media (max-width: 768px) {
           .aplayer.aplayer-fixed.aplayer-narrow {
             left: 0 !important;
