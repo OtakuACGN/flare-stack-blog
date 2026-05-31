@@ -1,115 +1,66 @@
 import { useEffect } from "react";
 
-// 扩展全局 JSX 声明
-declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      "meting-js": React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & {
-        server?: string;
-        type?: string;
-        id?: string;
-        fixed?: string;
-        mini?: string;
-        autoplay?: string;
-        theme?: string;
-        loop?: string;
-        order?: string;
-        volume?: string;
-        "list-folded"?: string;
-      };
-    }
-  }
-}
-
 export function BgmPlayer() {
   useEffect(() => {
-    // 1. 动态注入 APlayer 官方标准样式
+    // 1. 动态加载 APlayer 的标准 CSS 样式
     const link = document.createElement("link");
     link.rel = "stylesheet";
     link.href = "https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css";
     document.head.appendChild(link);
 
-    // 2. 动态注入 APlayer 核心脚本
-    const script1 = document.createElement("script");
-    script1.src = "https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js";
-    script1.async = true;
-    document.body.appendChild(script1);
+    // 2. 动态加载 APlayer 的 JS 核心库
+    const script = document.createElement("script");
+    script.src = "https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js";
+    script.async = true;
+    document.body.appendChild(script);
 
-    // 3. 动态注入 MetingJS 歌单解析引擎
-    const script2 = document.createElement("script");
-    script2.src = "https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js";
-    script2.async = true;
-    document.body.appendChild(script2);
+    // 3. 当脚本加载完毕后，使用纯 JS 初始化播放器，避开服务器端渲染的所有玄学 bug
+    script.onload = () => {
+      // @ts-ignore
+      if (window.APlayer) {
+        // 创建一个绝对干净、游离在页面普通布局之外的容器
+        const aplayerContainer = document.createElement("div");
+        aplayerContainer.id = "global-aplayer";
+        document.body.appendChild(aplayerContainer);
+
+        // 通过网易云 API 动态获取你的歌单切片，不用自定义标签
+        fetch("https://api.i-meto.com/meting/api?server=netease&type=playlist&id=18006742006")
+          .then((res) => res.json())
+          .then((songs) => {
+            // 将网易云的标准歌单格式转换为 APlayer 认识的格式
+            const audioList = songs.map((song: any) => ({
+              name: song.title,
+              artist: song.author,
+              url: song.url,
+              cover: song.pic,
+              lrc: song.lrc
+            }));
+
+            // @ts-ignore
+            new window.APlayer({
+              container: aplayerContainer,
+              fixed: true,          // 启用标准的官方吸底模式
+              mini: true,           // 迷你模式
+              autoplay: false,      // 防浏览器拦截
+              loop: "all",
+              order: "random",
+              volume: 0.4,
+              listFolded: true,
+              audio: audioList,     // 传入转换好的歌曲数据
+            });
+          })
+          .catch((err) => console.error("网易云歌单解析失败: ", err));
+      }
+    };
 
     return () => {
+      // 组件销毁时彻底清理，不给网页留一丝垃圾
       link.remove();
-      script1.remove();
-      script2.remove();
+      script.remove();
+      document.getElementById("global-aplayer")?.remove();
     };
   }, []);
 
-  // 🎯 极其严格的 CSS 隔离：所有的选择器全部强制加上 [fixed="true"] 属性锁定
-  // 这样样式只会对底部的 MetingJS 播放器生效，绝对绝对不会再碰到你博客的任何作者卡片和头像！
-  const cssStyles = `
-    .aplayer.aplayer-fixed {
-      z-index: 10000 !important;
-      background: var(--fuwari-card-bg) !important;
-      color: var(--fuwari-text-main) !important;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
-      border-radius: 0 8px 8px 0 !important;
-      border: 1px solid var(--fuwari-border) !important;
-      border-left: none !important;
-    }
-    meting-js .aplayer .aplayer-info {
-      background: var(--fuwari-card-bg) !important;
-      border-top: 1px solid var(--fuwari-border) !important;
-    }
-    meting-js .aplayer .aplayer-list {
-      background: var(--fuwari-card-bg) !important;
-      border: 1px solid var(--fuwari-border) !important;
-    }
-    meting-js .aplayer .aplayer-list ol li {
-      border-top: 1px solid var(--fuwari-border) !important;
-      color: var(--fuwari-text-main) !important;
-    }
-    meting-js .aplayer .aplayer-list ol li:hover {
-      background: var(--fuwari-page-bg) !important;
-    }
-    meting-js .aplayer .aplayer-list ol li.aplayer-list-light {
-      background: var(--fuwari-primary-fade) !important;
-    }
-    meting-js .aplayer .aplayer-info .aplayer-music .aplayer-title {
-      color: var(--fuwari-text-main) !important;
-    }
-    meting-js .aplayer .aplayer-info .aplayer-music .aplayer-author {
-      color: var(--fuwari-text-mute) !important;
-    }
-    @media (max-width: 768px) {
-      .aplayer.aplayer-fixed.aplayer-narrow {
-        left: 0 !important;
-      }
-    }
-  `;
-
-  return (
-    <>
-      {/* 🎵 绑定你的网易云歌单 */}
-      <meting-js
-        server="netease"
-        type="playlist"
-        id="18006742006"
-        fixed="true"
-        mini="true"
-        autoplay="false"
-        theme="var(--fuwari-primary)"
-        loop="all"
-        order="random"
-        volume="0.4"
-        list-folded="true"
-      />
-
-      {/* 使用 dangerouslySetInnerHTML 注入安全的局部样式 */}
-      <style dangerouslySetInnerHTML={{ __html: cssStyles }} />
-    </>
-  );
+  // 🎯 极其纯净：由于是用纯 JS 独立动态挂载到 body 下的，这里组件返回“空”，100% 不破坏你原本页面的任何 HTML 结构和卡片布局！
+  return null;
 }
