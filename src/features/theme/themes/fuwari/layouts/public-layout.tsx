@@ -6,6 +6,7 @@ import { Sidebar } from "../components/sidebar";
 import { Footer } from "./footer";
 import { MobileMenu } from "./mobile-menu";
 import { Navbar } from "./navbar";
+import { BgmPlayer } from "../components/control/bgm-player"; // 👈 1. 引入刚刚写好的播放器
 
 const BANNER_HEIGHT_HOME = 65;
 const BANNER_HEIGHT_PAGE = 35;
@@ -49,7 +50,7 @@ export function PublicLayout({
         </div>
       </div>
 
-      {/* 🖼️ Banner 背景图（动态黄金焦点优化版） */}
+      {/* 🖼️ Banner 背景图（传颂之物黄金裁剪版） */}
       <div
         className="absolute left-0 right-0 top-0 z-10 overflow-hidden transition-[height] duration-300 ease-in-out select-none"
         style={{ height: `${bannerHeightVh}vh` }}
@@ -60,9 +61,6 @@ export function PublicLayout({
           fetchPriority="high"
           className="w-full h-full object-cover transition-[object-position] duration-300 ease-in-out"
           style={{
-            // 🎯 核心优化：
-            // 水平轴死锁 40%：确保窄屏下左侧的久远永远在屏幕内，同时带鱼屏下保留中间的哈克
-            // 垂直轴动态计算：首页(65vh)时重心在 35% 尽显雪山与双人构图；普通页(35vh)时重心上提至 20%，死锁头部，防止被卡片推上来挡住
             objectPosition: isHomePage ? "40% 35%" : "40% 20%",
           }}
         />
@@ -97,6 +95,9 @@ export function PublicLayout({
 
           {/* 返回顶部按钮 */}
           <BackToTop />
+
+          {/* 🎵 2. 全局网易云吸底背景音乐播放器 */}
+          <BgmPlayer />
         </div>
       </div>
     </div>
