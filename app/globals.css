@@ -1,8 +1,15 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #fffafc;
+  --foreground: #1f1722;
+  --surface: #ffffff;
+  --surface-soft: #fff4f8;
+  --border: #f3d7e3;
+  --border-strong: #ebb8cc;
+  --accent: #e86b98;
+  --accent-strong: #d94e81;
+  --muted: #766776;
 }
 
 @theme inline {
@@ -14,21 +21,34 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #140f13;
+    --foreground: #f7eef3;
+    --surface: #1b1419;
+    --surface-soft: #241a21;
+    --border: #3d2a35;
+    --border-strong: #5a3848;
+    --accent: #f08ab0;
+    --accent-strong: #f4a4c2;
+    --muted: #beaab5;
   }
 }
 
-body {
+html {
   background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
 }
 
-/* ==========================================================================
-   🌟 极客降维打击：强行隐藏 Next.js 16 开发环境的报错遮罩层与 Issue 提示红点
-   用来解决 Keystatic 等第三方老牌 CMS 库在 Turbopack 下的 href="" 静态审查冲突
-   ========================================================================== */
+body {
+  background:
+    radial-gradient(circle at top, color-mix(in srgb, var(--surface-soft) 90%, transparent) 0%, transparent 55%),
+    var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--accent) 28%, transparent);
+}
+
 nextjs-portal,
 #nextjs-__webpack_toast_container__ {
   display: none !important;

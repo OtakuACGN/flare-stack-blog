@@ -1,31 +1,29 @@
-// app/page.tsx
-import Link from 'next/link';
-import fs from 'fs';
-import path from 'path';
+import fs from "fs";
+import path from "path";
+import Image from "next/image";
+import Link from "next/link";
 
-// 定义文章的类型结构
 interface Post {
   slug: string;
   title: string;
   publishedAt?: string;
   summary?: string;
+  coverImage?: string;
 }
 
-// 纯原生的方式读取本地 Keystatic 生成的博客文章数据
 function getPosts(): Post[] {
-  const postsDirectory = path.join(process.cwd(), 'content/posts');
-  
-  // 如果还没创建过任何文章，先返回空列表
+  const postsDirectory = path.join(process.cwd(), "content/posts");
+
   if (!fs.existsSync(postsDirectory)) return [];
 
   const files = fs.readdirSync(postsDirectory);
 
   return files
-    .filter((filename) => filename.endsWith('.json')) // 读取 Keystatic 存元数据的 json 文件
+    .filter((filename) => filename.endsWith(".json"))
     .map((filename) => {
-      const slug = filename.replace('.json', '');
+      const slug = filename.replace(".json", "");
       const filePath = path.join(postsDirectory, filename);
-      const fileContent = fs.readFileSync(filePath, 'utf8');
+      const fileContent = fs.readFileSync(filePath, "utf8");
       const metadata = JSON.parse(fileContent);
 
       return {
@@ -33,10 +31,10 @@ function getPosts(): Post[] {
         title: metadata.title || slug,
         publishedAt: metadata.publishedAt,
         summary: metadata.summary,
+        coverImage: metadata.coverImage,
       };
     })
     .sort((a, b) => {
-      // 按发布时间倒序排列
       return new Date(b.publishedAt || 0).getTime() - new Date(a.publishedAt || 0).getTime();
     });
 }
@@ -45,54 +43,122 @@ export default function Home() {
   const posts = getPosts();
 
   return (
-    <div className="min-h-screen bg-pink-50/20 text-gray-800 font-sans">
-      {/* 二次元感十足的顶部大通栏 */}
-      <header className="bg-white border-b border-pink-100 py-12 text-center shadow-sm">
-        <h1 className="text-4xl font-extrabold text-pink-500 tracking-wider">
-          ✨ YT's Otaku Blog ✨
-        </h1>
-        <p className="text-gray-400 mt-2 text-sm">关注博主不迷路，这里记录纯粹的极客与二次元日常</p>
+    <div className="min-h-screen text-[color:var(--foreground)]">
+      <header className="border-b border-[color:var(--border)] bg-[color:var(--surface)]/92 backdrop-blur-sm">
+        <div className="mx-auto max-w-5xl px-6 py-12 sm:py-14">
+          <div className="max-w-2xl">
+            <p className="mb-3 text-xs font-semibold uppercase tracking-[0.28em] text-[color:var(--accent)]">
+              Personal Notes / Blog
+            </p>
+            <h1 className="text-3xl font-black tracking-tight text-[color:var(--foreground)] sm:text-4xl">
+              YT&apos;s Otaku Blog
+            </h1>
+            <p className="mt-4 text-sm leading-7 text-[color:var(--muted)] sm:text-[15px]">
+              记录技术、日常和喜欢的内容。页面保持尽量干净，把重点交给文章本身。
+            </p>
+          </div>
+        </div>
       </header>
 
-      {/* 主体内容区 */}
-      <main className="max-w-4xl mx-auto px-6 py-10">
-        <h2 className="text-xl font-bold text-gray-700 mb-6 border-l-4 border-pink-400 pl-3">
-          最新文章 / Recent Posts
-        </h2>
+      <main className="mx-auto max-w-5xl px-6 py-10 sm:py-12">
+        <div className="mb-6 flex items-center justify-between gap-4">
+          <h2 className="text-lg font-bold text-[color:var(--foreground)] sm:text-xl">
+            最新文章
+          </h2>
+          <span className="text-xs text-[color:var(--muted)]">
+            {posts.length} 篇内容
+          </span>
+        </div>
 
         {posts.length === 0 ? (
-          <div className="bg-white rounded-2xl p-12 text-center border border-dashed border-gray-200">
-            <p className="text-gray-400">目前还没有写过文章哦，快去 <Link href="/keystatic" className="text-pink-500 underline font-medium">管理后台</Link> 写一篇吧！</p>
+          <div className="rounded-3xl border border-dashed border-[color:var(--border)] bg-[color:var(--surface)] px-6 py-14 text-center shadow-[0_10px_30px_rgba(20,15,19,0.04)]">
+            <p className="text-sm leading-7 text-[color:var(--muted)]">
+              目前还没有写过文章，去
+              {" "}
+              <Link
+                href="/keystatic"
+                className="font-medium text-[color:var(--accent)] underline decoration-[color:var(--border-strong)] underline-offset-4"
+              >
+                管理后台
+              </Link>
+              {" "}
+              新建一篇吧。
+            </p>
           </div>
         ) : (
-          <div className="grid gap-6">
-            {posts.map((post) => (
-              <article 
-                key={post.slug} 
-                className="bg-white p-6 rounded-2xl shadow-sm border border-pink-50/50 hover:shadow-md transition-all duration-300 group"
-              >
-                <div className="flex justify-between items-start mb-2">
-                  <h3 className="text-xl font-bold text-gray-800 group-hover:text-pink-500 transition-colors">
-                    {post.title}
-                  </h3>
-                  {post.publishedAt && (
-                    <span className="text-xs text-gray-400 bg-gray-50 px-2.5 py-1 rounded-full">
-                      📅 {post.publishedAt}
-                    </span>
-                  )}
-                </div>
-                {post.summary && (
-                  <p className="text-gray-500 text-sm leading-relaxed mb-4">
-                    {post.summary}
-                  </p>
-                )}
-                <div className="text-right">
-                  <span className="text-xs font-semibold text-pink-400 group-hover:text-pink-500 transition-colors">
-                    阅读正文 →
-                  </span>
-                </div>
-              </article>
-            ))}
+          <div className="grid gap-5">
+            {posts.map((post, index) => {
+              const isFeatured = index === 0 && Boolean(post.coverImage);
+
+              return (
+                <article
+                  key={post.slug}
+                  className={[
+                    "group overflow-hidden rounded-3xl border border-[color:var(--border)] bg-[color:var(--surface)] shadow-[0_12px_36px_rgba(20,15,19,0.05)] transition duration-300 hover:-translate-y-0.5 hover:border-[color:var(--border-strong)] hover:shadow-[0_16px_44px_rgba(20,15,19,0.08)]",
+                    isFeatured ? "md:grid md:grid-cols-[minmax(0,1.15fr)_minmax(320px,420px)]" : "",
+                  ].join(" ")}
+                >
+                  <div className="p-6 sm:p-7">
+                    <div className="mb-3 flex items-center gap-3 text-xs text-[color:var(--muted)]">
+                      {post.publishedAt ? (
+                        <span className="rounded-full border border-[color:var(--border)] bg-[color:var(--surface-soft)] px-3 py-1">
+                          {post.publishedAt}
+                        </span>
+                      ) : null}
+                      {isFeatured ? (
+                        <span className="rounded-full bg-[color:var(--accent)]/10 px-3 py-1 font-medium text-[color:var(--accent-strong)]">
+                          推荐阅读
+                        </span>
+                      ) : null}
+                    </div>
+
+                    <h3 className="text-xl font-bold leading-8 text-[color:var(--foreground)] transition-colors group-hover:text-[color:var(--accent-strong)] sm:text-2xl">
+                      {post.title}
+                    </h3>
+
+                    {post.summary ? (
+                      <p className="mt-4 text-sm leading-7 text-[color:var(--muted)] sm:text-[15px]">
+                        {post.summary}
+                      </p>
+                    ) : (
+                      <p className="mt-4 text-sm leading-7 text-[color:var(--muted)] sm:text-[15px]">
+                        这篇文章还没有填写摘要，点击进入查看完整内容。
+                      </p>
+                    )}
+
+                    <div className="mt-6">
+                      <Link
+                        href={`/posts/${post.slug}`}
+                        className="inline-flex items-center gap-2 text-sm font-semibold text-[color:var(--accent)] transition-colors hover:text-[color:var(--accent-strong)]"
+                      >
+                        阅读正文
+                        <span aria-hidden="true">→</span>
+                      </Link>
+                    </div>
+                  </div>
+
+                  {post.coverImage ? (
+                    <div className={[
+                      "border-t border-[color:var(--border)] bg-[color:var(--surface-soft)] md:border-t-0",
+                      isFeatured ? "md:border-l" : "",
+                    ].join(" ")}>
+                      <div className="p-4 sm:p-5">
+                        <div className="relative overflow-hidden rounded-2xl border border-[color:var(--border)] bg-white/70 dark:bg-black/10 aspect-[16/10]">
+                          <Image
+                            src={post.coverImage}
+                            alt={`${post.title} 封面图`}
+                            fill
+                            sizes="(max-width: 768px) 100vw, 420px"
+                            className="object-contain object-center p-2"
+                            unoptimized
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ) : null}
+                </article>
+              );
+            })}
           </div>
         )}
       </main>
