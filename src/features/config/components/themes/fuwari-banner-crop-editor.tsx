@@ -7,32 +7,27 @@ import {
 } from "lucide-react";
 import type { ComponentType, CSSProperties, PointerEvent } from "react";
 import { useRef, useState } from "react";
-import {
-  type FieldPath,
-  useFormContext,
-  useWatch,
-} from "react-hook-form";
+import { useFormContext, useWatch } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import type { SystemConfig } from "@/features/config/config.schema";
 import {
-  DEFAULT_FUWARI_BANNER_CROP,
   FUWARI_BANNER_POSITION_MAX,
   FUWARI_BANNER_POSITION_MIN,
   FUWARI_BANNER_SCALE_MAX,
   FUWARI_BANNER_SCALE_MIN,
-  type FuwariBannerCropInput,
 } from "@/features/config/site-config.schema";
 import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
-
-type BannerMode = "home" | "page";
-type BannerViewport = "desktop" | "mobile";
-
-type BannerCropValue = {
-  x: number;
-  y: number;
-  scale: number;
-};
+import {
+  type FuwariBannerCropValue,
+  type FuwariBannerMode,
+  type FuwariBannerViewport,
+  getFuwariBannerCropFieldPath,
+  getFuwariBannerCropFromPointer,
+  getFuwariBannerCropValue,
+  getFuwariBannerPreviewUrl,
+  resolveFuwariBannerCropUpdate,
+} from "./fuwari-banner-crop-model";
 
 const modeOptions = [
   { value: "home", icon: Home, label: () => m.settings_site_banner_crop_home() },
@@ -51,61 +46,6 @@ const viewportOptions = [
     label: () => m.settings_site_banner_crop_mobile(),
   },
 ] as const;
-
-function clamp(value: number, min: number, max: number) {
-  return Math.min(Math.max(value, min), max);
-}
-
-function roundPercent(value: number) {
-  return Math.round(value * 10) / 10;
-}
-
-function roundScale(value: number) {
-  return Math.round(value * 100) / 100;
-}
-
-function getPreviewUrl(value: unknown): string | null {
-  if (typeof value !== "string") return null;
-  const trimmed = value.trim();
-  if (!trimmed) return null;
-  if (trimmed.startsWith("/")) return trimmed;
-  if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
-    return trimmed;
-  }
-  return null;
-}
-
-function getCropValue(
-  banner: FuwariBannerCropInput | undefined,
-  mode: BannerMode,
-  viewport: BannerViewport,
-): BannerCropValue {
-  const fallback = DEFAULT_FUWARI_BANNER_CROP[mode][viewport];
-  const current = banner?.[mode]?.[viewport];
-
-  return {
-    x:
-      typeof current?.x === "number" && Number.isFinite(current.x)
-        ? current.x
-        : fallback.x,
-    y:
-      typeof current?.y === "number" && Number.isFinite(current.y)
-        ? current.y
-        : fallback.y,
-    scale:
-      typeof current?.scale === "number" && Number.isFinite(current.scale)
-        ? current.scale
-        : fallback.scale,
-  };
-}
-
-function makeFieldPath(
-  mode: BannerMode,
-  viewport: BannerViewport,
-  field: keyof BannerCropValue,
-) {
-  return `site.theme.fuwari.banner.${mode}.${viewport}.${field}` as FieldPath<SystemConfig>;
-}
 
 function SegmentButton({
   isActive,
@@ -176,9 +116,9 @@ function CropRange({
 
 export function FuwariBannerCropEditor() {
   const { control, setValue } = useFormContext<SystemConfig>();
-  const [activeMode, setActiveMode] = useState<BannerMode>("home");
+  const [activeMode, setActiveMode] = useState<FuwariBannerMode>("home");
   const [activeViewport, setActiveViewport] =
-    useState<BannerViewport>("desktop");
+    useState<FuwariBannerViewport>("desktop");
   const previewRef = useRef<HTMLDivElement>(null);
 
   const homeBg = useWatch({
@@ -190,44 +130,27 @@ export function FuwariBannerCropEditor() {
     name: "site.theme.fuwari.banner",
   });
 
-  const previewUrl = getPreviewUrl(homeBg);
-  const crop = getCropValue(banner, activeMode, activeViewport);
+  const previewUrl = getFuwariBannerPreviewUrl(homeBg);
+  const crop = getFuwariBannerCropValue(banner, activeMode, activeViewport);
   const previewAspectRatio =
     activeViewport === "desktop" ? "16 / 6" : "9 / 13";
 
-  const updateCrop = (next: Partial<BannerCropValue>) => {
-    const merged = {
-      ...crop,
-      ...next,
-    };
+  const updateCrop = (next: Partial<FuwariBannerCropValue>) => {
+    const nextCrop = resolveFuwariBannerCropUpdate(crop, next);
 
     setValue(
-      makeFieldPath(activeMode, activeViewport, "x"),
-      roundPercent(
-        clamp(
-          merged.x,
-          FUWARI_BANNER_POSITION_MIN,
-          FUWARI_BANNER_POSITION_MAX,
-        ),
-      ),
+      getFuwariBannerCropFieldPath(activeMode, activeViewport, "x"),
+      nextCrop.x,
       { shouldDirty: true, shouldValidate: true },
     );
     setValue(
-      makeFieldPath(activeMode, activeViewport, "y"),
-      roundPercent(
-        clamp(
-          merged.y,
-          FUWARI_BANNER_POSITION_MIN,
-          FUWARI_BANNER_POSITION_MAX,
-        ),
-      ),
+      getFuwariBannerCropFieldPath(activeMode, activeViewport, "y"),
+      nextCrop.y,
       { shouldDirty: true, shouldValidate: true },
     );
     setValue(
-      makeFieldPath(activeMode, activeViewport, "scale"),
-      roundScale(
-        clamp(merged.scale, FUWARI_BANNER_SCALE_MIN, FUWARI_BANNER_SCALE_MAX),
-      ),
+      getFuwariBannerCropFieldPath(activeMode, activeViewport, "scale"),
+      nextCrop.scale,
       { shouldDirty: true, shouldValidate: true },
     );
   };
@@ -236,10 +159,8 @@ export function FuwariBannerCropEditor() {
     const rect = previewRef.current?.getBoundingClientRect();
     if (!rect) return;
 
-    updateCrop({
-      x: ((event.clientX - rect.left) / rect.width) * 100,
-      y: ((event.clientY - rect.top) / rect.height) * 100,
-    });
+    const nextPosition = getFuwariBannerCropFromPointer(rect, event);
+    if (nextPosition) updateCrop(nextPosition);
   };
 
   const handlePointerDown = (event: PointerEvent<HTMLDivElement>) => {
@@ -253,7 +174,7 @@ export function FuwariBannerCropEditor() {
   };
 
   const resetActiveCrop = () => {
-    updateCrop(DEFAULT_FUWARI_BANNER_CROP[activeMode][activeViewport]);
+    updateCrop(getFuwariBannerCropValue(undefined, activeMode, activeViewport));
   };
 
   const previewImageStyle = {
