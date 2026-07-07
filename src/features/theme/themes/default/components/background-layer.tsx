@@ -70,55 +70,49 @@ export function BackgroundLayer({
     : "var(--bg-opacity)";
 
   return (
-    <>
-      {/* Preload background images — React 19 hoists <link> to <head> */}
-      {homeImage && <link rel="preload" as="image" href={homeImage} />}
-      {globalImage && <link rel="preload" as="image" href={globalImage} />}
+    <div
+      ref={containerRef}
+      aria-hidden="true"
+      className="[--bg-opacity:var(--bg-opacity-light)] dark:[--bg-opacity:var(--bg-opacity-dark)]"
+      style={
+        {
+          "--bg-opacity-light": light.opacity,
+          "--bg-opacity-dark": dark.opacity,
+          "--scroll-progress": "0",
+        } as React.CSSProperties
+      }
+    >
+      {/* Home background image */}
+      {homeImage && (
+        <div
+          style={{
+            ...imageStyle,
+            backgroundImage: `url("${homeImage}")`,
+            opacity: homeOpacityExpr,
+            transition,
+          }}
+        />
+      )}
 
-      <div
-        ref={containerRef}
-        aria-hidden="true"
-        className="[--bg-opacity:var(--bg-opacity-light)] dark:[--bg-opacity:var(--bg-opacity-dark)]"
-        style={
-          {
-            "--bg-opacity-light": light.opacity,
-            "--bg-opacity-dark": dark.opacity,
-            "--scroll-progress": "0",
-          } as React.CSSProperties
-        }
-      >
-        {/* Home background image */}
-        {homeImage && (
-          <div
-            style={{
-              ...imageStyle,
-              backgroundImage: `url("${homeImage}")`,
-              opacity: homeOpacityExpr,
-              transition,
-            }}
-          />
-        )}
+      {/* Global background image */}
+      {globalImage && (
+        <div
+          style={{
+            ...imageStyle,
+            backgroundImage: `url("${globalImage}")`,
+            opacity: globalOpacityExpr,
+            transition,
+          }}
+        />
+      )}
 
-        {/* Global background image */}
-        {globalImage && (
-          <div
-            style={{
-              ...imageStyle,
-              backgroundImage: `url("${globalImage}")`,
-              opacity: globalOpacityExpr,
-              transition,
-            }}
-          />
-        )}
-
-        {/* Overlay for text legibility */}
-        {(isHomepage || Boolean(globalImage)) && (
-          <div
-            className="bg-[linear-gradient(to_bottom,transparent,rgba(255,255,255,0.3),rgba(255,255,255,0.8))] dark:bg-[linear-gradient(to_bottom,transparent,rgba(0,0,0,0.3),rgba(0,0,0,0.8))]"
-            style={baseStyle}
-          />
-        )}
-      </div>
-    </>
+      {/* Overlay for text legibility */}
+      {(isHomepage || Boolean(globalImage)) && (
+        <div
+          className="bg-[linear-gradient(to_bottom,transparent,rgba(255,255,255,0.3),rgba(255,255,255,0.8))] dark:bg-[linear-gradient(to_bottom,transparent,rgba(0,0,0,0.3),rgba(0,0,0,0.8))]"
+          style={baseStyle}
+        />
+      )}
+    </div>
   );
 }
