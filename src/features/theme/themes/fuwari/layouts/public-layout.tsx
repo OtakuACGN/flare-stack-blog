@@ -1,6 +1,11 @@
 import { useLocation, useRouteContext } from "@tanstack/react-router";
+import type { CSSProperties } from "react";
 import { useState } from "react";
 import { BgmPlayer } from "@/components/content/bgm-player";
+import {
+  DEFAULT_FUWARI_BANNER_CROP,
+  type FuwariBannerCrop,
+} from "@/features/config/site-config.schema";
 import type { PublicLayoutProps } from "@/features/theme/contract/layouts";
 import { BackToTop } from "../components/control/back-to-top";
 import { Sidebar } from "../components/sidebar";
@@ -29,6 +34,25 @@ function getBannerHeightCss({
   return `clamp(${minRem}rem, ${preferredVh}vh, ${maxRem}rem)`;
 }
 
+function getBannerImageStyle(
+  crop: FuwariBannerCrop | undefined,
+  variant: "home" | "page",
+) {
+  const desktop =
+    crop?.[variant]?.desktop ?? DEFAULT_FUWARI_BANNER_CROP[variant].desktop;
+  const mobile =
+    crop?.[variant]?.mobile ?? DEFAULT_FUWARI_BANNER_CROP[variant].mobile;
+
+  return {
+    "--fuwari-banner-desktop-position": `${desktop.x}% ${desktop.y}%`,
+    "--fuwari-banner-desktop-origin": `${desktop.x}% ${desktop.y}%`,
+    "--fuwari-banner-desktop-scale": String(desktop.scale),
+    "--fuwari-banner-mobile-position": `${mobile.x}% ${mobile.y}%`,
+    "--fuwari-banner-mobile-origin": `${mobile.x}% ${mobile.y}%`,
+    "--fuwari-banner-mobile-scale": String(mobile.scale),
+  } as CSSProperties;
+}
+
 export function PublicLayout({
   children,
   navOptions,
@@ -43,6 +67,7 @@ export function PublicLayout({
   const bannerHeight = isHomePage ? BANNER_HEIGHT_HOME : BANNER_HEIGHT_PAGE;
   const bannerHeightCss = getBannerHeightCss(bannerHeight);
   const homeBg = siteConfig.theme.fuwari.homeBg?.trim();
+  const bannerVariant = isHomePage ? "home" : "page";
 
   return (
     <div className="relative min-h-screen bg-[var(--fuwari-page-bg)] transition-colors">
@@ -80,10 +105,11 @@ export function PublicLayout({
             aria-hidden="true"
             fetchPriority={isHomePage ? "high" : undefined}
             decoding="async"
-            className="h-full w-full object-cover transition-[object-position] duration-300 ease-in-out"
-            style={{
-              objectPosition: isHomePage ? "40% 35%" : "40% 20%",
-            }}
+            className="fuwari-banner-image h-full w-full object-cover transition-[object-position,transform] duration-300 ease-in-out"
+            style={getBannerImageStyle(
+              siteConfig.theme.fuwari.banner,
+              bannerVariant,
+            )}
           />
         ) : null}
       </div>

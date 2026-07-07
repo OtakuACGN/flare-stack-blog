@@ -127,6 +127,13 @@
     color: rgb(0 0 0 / 0.75);
   }
 
+  .fuwari-banner-image {
+    object-position: var(--fuwari-banner-desktop-position, 40% 35%);
+    transform: scale(var(--fuwari-banner-desktop-scale, 1));
+    transform-origin: var(--fuwari-banner-desktop-origin, 40% 35%);
+    will-change: object-position, transform;
+  }
+
   .fuwari-text-90 {
     color: var(--fuwari-text-90);
   }
@@ -244,6 +251,14 @@
   }
   .dark .fuwari-toc-scrollbar:hover::-webkit-scrollbar-thumb {
     background-color: rgba(255, 255, 255, 0.2);
+  }
+}
+
+@media (max-width: 767px) {
+  .fuwari-banner-image {
+    object-position: var(--fuwari-banner-mobile-position, 45% 35%);
+    transform: scale(var(--fuwari-banner-mobile-scale, 1));
+    transform-origin: var(--fuwari-banner-mobile-origin, 45% 35%);
   }
 }
 

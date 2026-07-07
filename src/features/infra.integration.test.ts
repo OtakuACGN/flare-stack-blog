@@ -4,9 +4,13 @@ import { z } from "zod";
 import * as CacheService from "@/features/cache/cache.service";
 import { serializeKey } from "@/features/cache/cache.utils";
 import type { CacheNamespace } from "@/features/cache/types";
-import { DEFAULT_CONFIG } from "@/features/config/config.schema";
+import {
+  DEFAULT_CONFIG,
+  type SystemConfig,
+} from "@/features/config/config.schema";
 import * as ConfigRepo from "@/features/config/data/config.data";
 import * as ConfigService from "@/features/config/service/config.service";
+import { DEFAULT_FUWARI_BANNER_CROP } from "@/features/config/site-config.schema";
 import * as Invalidate from "@/lib/invalidate";
 
 describe("Infra Integration", () => {
@@ -403,6 +407,65 @@ describe("Infra Integration", () => {
 
     afterEach(() => {
       vi.restoreAllMocks();
+    });
+
+    it("fills default fuwari banner crop for legacy site config", () => {
+      const legacyConfig: SystemConfig = {
+        ...DEFAULT_CONFIG,
+        site: {
+          ...DEFAULT_CONFIG.site,
+          theme: {
+            ...DEFAULT_CONFIG.site?.theme,
+            fuwari: {
+              homeBg: "/images/home-bg.webp",
+              avatar: "/images/avatar.png",
+              primaryHue: 250,
+            },
+          },
+        },
+      };
+
+      const siteConfig = ConfigService.resolveSiteConfig(legacyConfig);
+
+      expect(siteConfig.theme.fuwari.banner).toEqual(
+        DEFAULT_FUWARI_BANNER_CROP,
+      );
+    });
+
+    it("merges partial fuwari banner crop with defaults", () => {
+      const partialConfig: SystemConfig = {
+        ...DEFAULT_CONFIG,
+        site: {
+          ...DEFAULT_CONFIG.site,
+          theme: {
+            ...DEFAULT_CONFIG.site?.theme,
+            fuwari: {
+              homeBg: "/images/home-bg.webp",
+              avatar: "/images/avatar.png",
+              primaryHue: 250,
+              banner: {
+                home: {
+                  desktop: { x: 52, scale: 1.25 },
+                },
+              },
+            },
+          },
+        },
+      };
+
+      const siteConfig = ConfigService.resolveSiteConfig(partialConfig);
+
+      expect(siteConfig.theme.fuwari.banner.home.desktop).toEqual({
+        ...DEFAULT_FUWARI_BANNER_CROP.home.desktop,
+        x: 52,
+        scale: 1.25,
+      });
+      expect(siteConfig.theme.fuwari.banner.home.mobile).toEqual(
+        DEFAULT_FUWARI_BANNER_CROP.home.mobile,
+      );
+      expect(siteConfig.theme.fuwari.banner.page).toEqual(
+        DEFAULT_FUWARI_BANNER_CROP.page,
+      );
     });
 
     it("purges site CDN cache when site settings change", async () => {

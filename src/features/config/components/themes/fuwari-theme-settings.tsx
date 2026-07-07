@@ -8,6 +8,7 @@ import {
   FUWARI_THEME_HUE_MIN,
 } from "@/features/config/site-config.schema";
 import { m } from "@/paraglide/messages";
+import { FuwariBannerCropEditor } from "./fuwari-banner-crop-editor";
 
 function FuwariHuePreview() {
   const { control } = useFormContext<SystemConfig>();
@@ -95,6 +96,7 @@ export function FuwariThemeSettings() {
         placeholder="/images/asset/themes/fuwari/home-bg.webp or https://picsum.photos/1600/900"
         error={errors.site?.theme?.fuwari?.homeBg?.message}
       />
+      <FuwariBannerCropEditor />
       <AssetUploadField
         name="site.theme.fuwari.avatar"
         assetPath="themes/fuwari/avatar.png"

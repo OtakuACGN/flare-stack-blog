@@ -1,4 +1,7 @@
-import type { SiteConfig } from "@/features/config/site-config.schema";
+import {
+  DEFAULT_FUWARI_BANNER_CROP,
+  type SiteConfig,
+} from "@/features/config/site-config.schema";
 
 export const blogConfig = {
   title: "站点名称",
@@ -26,6 +29,7 @@ export const blogConfig = {
       homeBg: "/images/home-bg.webp",
       avatar: "/images/avatar.png",
       primaryHue: 250,
+      banner: DEFAULT_FUWARI_BANNER_CROP,
     },
   },
 } as const satisfies SiteConfig;

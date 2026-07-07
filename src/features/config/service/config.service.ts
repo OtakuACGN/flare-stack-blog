@@ -7,7 +7,12 @@ import {
   SystemConfigSchema,
 } from "@/features/config/config.schema";
 import * as ConfigRepo from "@/features/config/data/config.data";
-import { FullSiteConfigSchema } from "@/features/config/site-config.schema";
+import {
+  DEFAULT_FUWARI_BANNER_CROP,
+  type FuwariBannerCrop,
+  type FuwariBannerCropInput,
+  FullSiteConfigSchema,
+} from "@/features/config/site-config.schema";
 import type { SocialLink } from "@/features/config/utils/social-platforms";
 import * as Storage from "@/features/media/data/media.storage";
 import { purgeSiteCDNCache } from "@/lib/invalidate";
@@ -81,6 +86,33 @@ function migrateSocial(social: unknown): SocialLink[] {
   return [...blogConfig.social];
 }
 
+function resolveFuwariBannerCrop(
+  banner: FuwariBannerCropInput | undefined,
+): FuwariBannerCrop {
+  return {
+    home: {
+      desktop: {
+        ...DEFAULT_FUWARI_BANNER_CROP.home.desktop,
+        ...banner?.home?.desktop,
+      },
+      mobile: {
+        ...DEFAULT_FUWARI_BANNER_CROP.home.mobile,
+        ...banner?.home?.mobile,
+      },
+    },
+    page: {
+      desktop: {
+        ...DEFAULT_FUWARI_BANNER_CROP.page.desktop,
+        ...banner?.page?.desktop,
+      },
+      mobile: {
+        ...DEFAULT_FUWARI_BANNER_CROP.page.mobile,
+        ...banner?.page?.mobile,
+      },
+    },
+  };
+}
+
 export function resolveSiteConfig(
   config: SystemConfig | null | undefined,
 ): SiteConfig {
@@ -131,6 +163,7 @@ export function resolveSiteConfig(
         primaryHue:
           config?.site?.theme?.fuwari?.primaryHue ??
           blogConfig.theme.fuwari.primaryHue,
+        banner: resolveFuwariBannerCrop(config?.site?.theme?.fuwari?.banner),
       },
     },
   });
