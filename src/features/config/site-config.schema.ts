@@ -1,406 +1,84 @@
 import { z } from "zod";
 import type { Messages } from "@/lib/i18n";
-import { SOCIAL_PLATFORM_KEYS } from "./utils/social-platforms";
+import {
+  createAssetPathSchema,
+  createOptionalAssetPathFormSchema,
+  createOptionalAssetPathSchema,
+  createSiteTextFormSchema,
+  createSiteTextSchema,
+  SocialLinkSchema,
+} from "./site-config/fields";
+import {
+  createDefaultThemeSiteConfigInputFormSchema,
+  defaultThemeBackgroundInputSchema,
+  defaultThemeBackgroundSchema,
+  defaultThemeSiteConfigInputSchema,
+  defaultThemeSiteConfigSchema,
+  DEFAULT_THEME_BLUR_MAX,
+  DEFAULT_THEME_BLUR_MIN,
+  DEFAULT_THEME_OPACITY_MAX,
+  DEFAULT_THEME_OPACITY_MIN,
+  DEFAULT_THEME_TRANSITION_MAX,
+  DEFAULT_THEME_TRANSITION_MIN,
+  normalizeDefaultThemeSiteConfig,
+  type DefaultThemeBackground,
+  type DefaultThemeSiteConfig,
+  type DefaultThemeSiteConfigInput,
+} from "./site-config/themes/default";
+import {
+  createFuwariThemeSiteConfigInputFormSchema,
+  DEFAULT_FUWARI_BANNER_CROP,
+  fuwariThemeSiteConfigInputSchema,
+  fuwariThemeSiteConfigSchema,
+  FUWARI_BANNER_POSITION_MAX,
+  FUWARI_BANNER_POSITION_MIN,
+  FUWARI_BANNER_SCALE_MAX,
+  FUWARI_BANNER_SCALE_MIN,
+  FUWARI_THEME_HUE_MAX,
+  FUWARI_THEME_HUE_MIN,
+  normalizeFuwariBannerCrop,
+  normalizeFuwariThemeSiteConfig,
+  type FuwariBannerCrop,
+  type FuwariBannerCropInput,
+  type FuwariThemeSiteConfig,
+  type FuwariThemeSiteConfigInput,
+} from "./site-config/themes/fuwari";
 
-export const SocialLinkSchema = z.object({
-  platform: z.enum(SOCIAL_PLATFORM_KEYS),
-  url: z.string(),
-  icon: z.string().optional(),
-  label: z.string().optional(),
-});
-
-export const DEFAULT_THEME_OPACITY_MIN = 0;
-export const DEFAULT_THEME_OPACITY_MAX = 0.4;
-export const DEFAULT_THEME_BLUR_MIN = 0;
-export const DEFAULT_THEME_BLUR_MAX = 32;
-export const DEFAULT_THEME_TRANSITION_MIN = 0;
-export const DEFAULT_THEME_TRANSITION_MAX = 1500;
-export const FUWARI_THEME_HUE_MIN = 0;
-export const FUWARI_THEME_HUE_MAX = 360;
-export const FUWARI_BANNER_POSITION_MIN = 0;
-export const FUWARI_BANNER_POSITION_MAX = 100;
-export const FUWARI_BANNER_SCALE_MIN = 1;
-export const FUWARI_BANNER_SCALE_MAX = 2;
-
-export const DEFAULT_FUWARI_BANNER_CROP = {
-  home: {
-    desktop: { x: 40, y: 35, scale: 1 },
-    mobile: { x: 45, y: 35, scale: 1 },
-  },
-  page: {
-    desktop: { x: 40, y: 20, scale: 1 },
-    mobile: { x: 50, y: 25, scale: 1 },
-  },
+export {
+  defaultThemeBackgroundInputSchema,
+  defaultThemeBackgroundSchema,
+  defaultThemeSiteConfigInputSchema,
+  defaultThemeSiteConfigSchema,
+  DEFAULT_FUWARI_BANNER_CROP,
+  DEFAULT_THEME_BLUR_MAX,
+  DEFAULT_THEME_BLUR_MIN,
+  DEFAULT_THEME_OPACITY_MAX,
+  DEFAULT_THEME_OPACITY_MIN,
+  DEFAULT_THEME_TRANSITION_MAX,
+  DEFAULT_THEME_TRANSITION_MIN,
+  fuwariThemeSiteConfigInputSchema,
+  fuwariThemeSiteConfigSchema,
+  FUWARI_BANNER_POSITION_MAX,
+  FUWARI_BANNER_POSITION_MIN,
+  FUWARI_BANNER_SCALE_MAX,
+  FUWARI_BANNER_SCALE_MIN,
+  FUWARI_THEME_HUE_MAX,
+  FUWARI_THEME_HUE_MIN,
+  normalizeDefaultThemeSiteConfig,
+  normalizeFuwariBannerCrop,
+  normalizeFuwariThemeSiteConfig,
+  SocialLinkSchema,
 };
 
-function createSiteTextSchema(max: number) {
-  return z.string().trim().max(max);
-}
-
-function createSiteTextFormSchema(max: number, messages: Messages) {
-  return z
-    .string()
-    .trim()
-    .max(max, messages.settings_site_validation_too_long({ max }));
-}
-
-function createAssetRefSchema() {
-  return z.string().refine((value) => value === "" || value.startsWith("/"), {
-    message: "Please enter a root-relative path",
-  });
-}
-
-function createAssetRefFormSchema(messages: Messages) {
-  return z.string().refine((value) => value === "" || value.startsWith("/"), {
-    message: messages.settings_site_validation_invalid_asset_ref(),
-  });
-}
-
-function isExternalImageUrl(value: string) {
-  try {
-    const url = new URL(value);
-    return url.protocol === "http:" || url.protocol === "https:";
-  } catch {
-    return false;
-  }
-}
-
-function createBackgroundImageRefSchema() {
-  return z
-    .string()
-    .trim()
-    .refine(
-      (value) =>
-        value === "" || value.startsWith("/") || isExternalImageUrl(value),
-      {
-        message: "Please enter a root-relative path or http(s) URL",
-      },
-    );
-}
-
-function createBackgroundImageRefFormSchema(messages: Messages) {
-  return z
-    .string()
-    .trim()
-    .refine(
-      (value) =>
-        value === "" || value.startsWith("/") || isExternalImageUrl(value),
-      {
-        message:
-          messages.settings_site_validation_invalid_background_image_ref(),
-      },
-    );
-}
-
-function createAssetPathSchema() {
-  return z.string().refine((value) => value.startsWith("/"), {
-    message: "Please enter a root-relative path",
-  });
-}
-
-function createAssetPathFormSchema(messages: Messages) {
-  return z.string().refine((value) => value.startsWith("/"), {
-    message: messages.settings_site_validation_invalid_asset_path(),
-  });
-}
-
-function createOptionalAssetPathSchema() {
-  return z.union([createAssetPathSchema(), z.literal("")]);
-}
-
-function createOptionalAssetPathFormSchema(messages: Messages) {
-  return z.union([createAssetPathFormSchema(messages), z.literal("")]);
-}
-
-function createOpacitySchema() {
-  return z
-    .number()
-    .min(DEFAULT_THEME_OPACITY_MIN)
-    .max(DEFAULT_THEME_OPACITY_MAX, {
-      message: `Value must be between ${DEFAULT_THEME_OPACITY_MIN} and ${DEFAULT_THEME_OPACITY_MAX}`,
-    });
-}
-
-function createOpacityFormSchema(messages: Messages) {
-  return z
-    .number()
-    .min(DEFAULT_THEME_OPACITY_MIN)
-    .max(DEFAULT_THEME_OPACITY_MAX, {
-      message: messages.settings_site_validation_opacity_range(),
-    });
-}
-
-function createBlurSchema() {
-  return z
-    .number()
-    .int()
-    .min(DEFAULT_THEME_BLUR_MIN)
-    .max(DEFAULT_THEME_BLUR_MAX, {
-      message: `Value must be between ${DEFAULT_THEME_BLUR_MIN} and ${DEFAULT_THEME_BLUR_MAX}`,
-    });
-}
-
-function createBlurFormSchema(messages: Messages) {
-  return z
-    .number()
-    .int()
-    .min(DEFAULT_THEME_BLUR_MIN)
-    .max(DEFAULT_THEME_BLUR_MAX, {
-      message: messages.settings_site_validation_blur_range(),
-    });
-}
-
-function createTransitionDurationSchema() {
-  return z
-    .number()
-    .int()
-    .min(DEFAULT_THEME_TRANSITION_MIN)
-    .max(DEFAULT_THEME_TRANSITION_MAX, {
-      message: `Value must be between ${DEFAULT_THEME_TRANSITION_MIN} and ${DEFAULT_THEME_TRANSITION_MAX}`,
-    });
-}
-
-function createTransitionDurationFormSchema(messages: Messages) {
-  return z
-    .number()
-    .int()
-    .min(DEFAULT_THEME_TRANSITION_MIN)
-    .max(DEFAULT_THEME_TRANSITION_MAX, {
-      message: messages.settings_site_validation_transition_range(),
-    });
-}
-
-function createHueSchema() {
-  return z
-    .number()
-    .int()
-    .min(FUWARI_THEME_HUE_MIN)
-    .max(FUWARI_THEME_HUE_MAX, {
-      message: `Value must be between ${FUWARI_THEME_HUE_MIN} and ${FUWARI_THEME_HUE_MAX}`,
-    });
-}
-
-function createHueFormSchema(messages: Messages) {
-  return z.number().int().min(FUWARI_THEME_HUE_MIN).max(FUWARI_THEME_HUE_MAX, {
-    message: messages.settings_site_validation_hue_range(),
-  });
-}
-
-function createFuwariBannerPositionSchema() {
-  return z
-    .number()
-    .min(FUWARI_BANNER_POSITION_MIN)
-    .max(FUWARI_BANNER_POSITION_MAX, {
-      message: `Value must be between ${FUWARI_BANNER_POSITION_MIN} and ${FUWARI_BANNER_POSITION_MAX}`,
-    });
-}
-
-function createFuwariBannerPositionFormSchema(messages: Messages) {
-  return z
-    .number()
-    .min(FUWARI_BANNER_POSITION_MIN)
-    .max(FUWARI_BANNER_POSITION_MAX, {
-      message: messages.settings_site_validation_banner_position_range(),
-    });
-}
-
-function createFuwariBannerScaleSchema() {
-  return z
-    .number()
-    .min(FUWARI_BANNER_SCALE_MIN)
-    .max(FUWARI_BANNER_SCALE_MAX, {
-      message: `Value must be between ${FUWARI_BANNER_SCALE_MIN} and ${FUWARI_BANNER_SCALE_MAX}`,
-    });
-}
-
-function createFuwariBannerScaleFormSchema(messages: Messages) {
-  return z
-    .number()
-    .min(FUWARI_BANNER_SCALE_MIN)
-    .max(FUWARI_BANNER_SCALE_MAX, {
-      message: messages.settings_site_validation_banner_scale_range(),
-    });
-}
-
-function createFuwariBannerViewportSchema() {
-  return z.object({
-    x: createFuwariBannerPositionSchema(),
-    y: createFuwariBannerPositionSchema(),
-    scale: createFuwariBannerScaleSchema(),
-  });
-}
-
-function createFuwariBannerViewportInputSchema() {
-  return z.object({
-    x: createFuwariBannerPositionSchema().optional(),
-    y: createFuwariBannerPositionSchema().optional(),
-    scale: createFuwariBannerScaleSchema().optional(),
-  });
-}
-
-function createFuwariBannerViewportInputFormSchema(messages: Messages) {
-  return z.object({
-    x: createFuwariBannerPositionFormSchema(messages).optional(),
-    y: createFuwariBannerPositionFormSchema(messages).optional(),
-    scale: createFuwariBannerScaleFormSchema(messages).optional(),
-  });
-}
-
-function createFuwariBannerModeSchema() {
-  return z.object({
-    desktop: createFuwariBannerViewportSchema(),
-    mobile: createFuwariBannerViewportSchema(),
-  });
-}
-
-function createFuwariBannerModeInputSchema() {
-  return z.object({
-    desktop: createFuwariBannerViewportInputSchema().optional(),
-    mobile: createFuwariBannerViewportInputSchema().optional(),
-  });
-}
-
-function createFuwariBannerModeInputFormSchema(messages: Messages) {
-  return z.object({
-    desktop: createFuwariBannerViewportInputFormSchema(messages).optional(),
-    mobile: createFuwariBannerViewportInputFormSchema(messages).optional(),
-  });
-}
-
-function createFuwariBannerCropSchema() {
-  return z.object({
-    home: createFuwariBannerModeSchema(),
-    page: createFuwariBannerModeSchema(),
-  });
-}
-
-function createFuwariBannerCropInputSchema() {
-  return z.object({
-    home: createFuwariBannerModeInputSchema().optional(),
-    page: createFuwariBannerModeInputSchema().optional(),
-  });
-}
-
-function createFuwariBannerCropInputFormSchema(messages: Messages) {
-  return z.object({
-    home: createFuwariBannerModeInputFormSchema(messages).optional(),
-    page: createFuwariBannerModeInputFormSchema(messages).optional(),
-  });
-}
-
-function createDefaultThemeBackgroundSchema() {
-  return z.object({
-    homeImage: createBackgroundImageRefSchema(),
-    globalImage: createBackgroundImageRefSchema(),
-    light: z.object({
-      opacity: createOpacitySchema(),
-    }),
-    dark: z.object({
-      opacity: createOpacitySchema(),
-    }),
-    backdropBlur: createBlurSchema(),
-    transitionDuration: createTransitionDurationSchema(),
-  });
-}
-
-function createDefaultThemeBackgroundInputSchema() {
-  return z.object({
-    homeImage: createBackgroundImageRefSchema().optional(),
-    globalImage: createBackgroundImageRefSchema().optional(),
-    light: z
-      .object({
-        opacity: createOpacitySchema().optional(),
-      })
-      .optional(),
-    dark: z
-      .object({
-        opacity: createOpacitySchema().optional(),
-      })
-      .optional(),
-    backdropBlur: createBlurSchema().optional(),
-    transitionDuration: createTransitionDurationSchema().optional(),
-  });
-}
-
-function createDefaultThemeBackgroundInputFormSchema(messages: Messages) {
-  return z.object({
-    homeImage: createBackgroundImageRefFormSchema(messages).optional(),
-    globalImage: createBackgroundImageRefFormSchema(messages).optional(),
-    light: z
-      .object({
-        opacity: createOpacityFormSchema(messages).optional(),
-      })
-      .optional(),
-    dark: z
-      .object({
-        opacity: createOpacityFormSchema(messages).optional(),
-      })
-      .optional(),
-    backdropBlur: createBlurFormSchema(messages).optional(),
-    transitionDuration: createTransitionDurationFormSchema(messages).optional(),
-  });
-}
-
-function createDefaultThemeSiteConfigSchema() {
-  return z.object({
-    navBarName: createSiteTextSchema(60),
-    background: createDefaultThemeBackgroundSchema().optional(),
-  });
-}
-
-function createDefaultThemeSiteConfigInputSchema() {
-  return z.object({
-    navBarName: createSiteTextSchema(60).optional(),
-    background: createDefaultThemeBackgroundInputSchema().optional(),
-  });
-}
-
-function createDefaultThemeSiteConfigInputFormSchema(messages: Messages) {
-  return z.object({
-    navBarName: createSiteTextFormSchema(60, messages).optional(),
-    background:
-      createDefaultThemeBackgroundInputFormSchema(messages).optional(),
-  });
-}
-
-function createFuwariThemeSiteConfigSchema() {
-  return z.object({
-    homeBg: createBackgroundImageRefSchema(),
-    avatar: createAssetRefSchema(),
-    primaryHue: createHueSchema(),
-    banner: createFuwariBannerCropSchema(),
-  });
-}
-
-function createFuwariThemeSiteConfigInputSchema() {
-  return z.object({
-    homeBg: createBackgroundImageRefSchema().optional(),
-    avatar: createAssetRefSchema().optional(),
-    primaryHue: createHueSchema().optional(),
-    banner: createFuwariBannerCropInputSchema().optional(),
-  });
-}
-
-function createFuwariThemeSiteConfigInputFormSchema(messages: Messages) {
-  return z.object({
-    homeBg: createBackgroundImageRefFormSchema(messages).optional(),
-    avatar: createAssetRefFormSchema(messages).optional(),
-    primaryHue: createHueFormSchema(messages).optional(),
-    banner: createFuwariBannerCropInputFormSchema(messages).optional(),
-  });
-}
-
-export const defaultThemeBackgroundSchema =
-  createDefaultThemeBackgroundSchema();
-export const defaultThemeBackgroundInputSchema =
-  createDefaultThemeBackgroundInputSchema();
-export const defaultThemeSiteConfigSchema =
-  createDefaultThemeSiteConfigSchema();
-export const defaultThemeSiteConfigInputSchema =
-  createDefaultThemeSiteConfigInputSchema();
-export const fuwariThemeSiteConfigSchema = createFuwariThemeSiteConfigSchema();
-export const fuwariThemeSiteConfigInputSchema =
-  createFuwariThemeSiteConfigInputSchema();
+export type {
+  DefaultThemeBackground,
+  DefaultThemeSiteConfig,
+  DefaultThemeSiteConfigInput,
+  FuwariBannerCrop,
+  FuwariBannerCropInput,
+  FuwariThemeSiteConfig,
+  FuwariThemeSiteConfigInput,
+};
 
 export const FullSiteConfigSchema = z.object({
   title: createSiteTextSchema(120),
@@ -472,22 +150,5 @@ export const SiteConfigInputSchema = z.object({
 
 export const SiteConfigSchema = SiteConfigInputSchema;
 
-export type DefaultThemeSiteConfig = z.infer<
-  typeof defaultThemeSiteConfigSchema
->;
-export type DefaultThemeBackground = z.infer<
-  typeof defaultThemeBackgroundSchema
->;
-export type DefaultThemeSiteConfigInput = z.infer<
-  typeof defaultThemeSiteConfigInputSchema
->;
-export type FuwariThemeSiteConfig = z.infer<typeof fuwariThemeSiteConfigSchema>;
-export type FuwariThemeSiteConfigInput = z.infer<
-  typeof fuwariThemeSiteConfigInputSchema
->;
-export type FuwariBannerCrop = FuwariThemeSiteConfig["banner"];
-export type FuwariBannerCropInput = NonNullable<
-  FuwariThemeSiteConfigInput["banner"]
->;
 export type SiteConfig = z.infer<typeof FullSiteConfigSchema>;
 export type SiteConfigInput = z.infer<typeof SiteConfigInputSchema>;

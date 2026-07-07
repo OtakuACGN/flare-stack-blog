@@ -8,10 +8,9 @@ import {
 } from "@/features/config/config.schema";
 import * as ConfigRepo from "@/features/config/data/config.data";
 import {
-  DEFAULT_FUWARI_BANNER_CROP,
-  type FuwariBannerCrop,
-  type FuwariBannerCropInput,
   FullSiteConfigSchema,
+  normalizeDefaultThemeSiteConfig,
+  normalizeFuwariThemeSiteConfig,
 } from "@/features/config/site-config.schema";
 import type { SocialLink } from "@/features/config/utils/social-platforms";
 import * as Storage from "@/features/media/data/media.storage";
@@ -86,38 +85,9 @@ function migrateSocial(social: unknown): SocialLink[] {
   return [...blogConfig.social];
 }
 
-function resolveFuwariBannerCrop(
-  banner: FuwariBannerCropInput | undefined,
-): FuwariBannerCrop {
-  return {
-    home: {
-      desktop: {
-        ...DEFAULT_FUWARI_BANNER_CROP.home.desktop,
-        ...banner?.home?.desktop,
-      },
-      mobile: {
-        ...DEFAULT_FUWARI_BANNER_CROP.home.mobile,
-        ...banner?.home?.mobile,
-      },
-    },
-    page: {
-      desktop: {
-        ...DEFAULT_FUWARI_BANNER_CROP.page.desktop,
-        ...banner?.page?.desktop,
-      },
-      mobile: {
-        ...DEFAULT_FUWARI_BANNER_CROP.page.mobile,
-        ...banner?.page?.mobile,
-      },
-    },
-  };
-}
-
 export function resolveSiteConfig(
   config: SystemConfig | null | undefined,
 ): SiteConfig {
-  const configDefaultBackground = config?.site?.theme?.default?.background;
-
   return FullSiteConfigSchema.parse({
     title: config?.site?.title ?? blogConfig.title,
     author: config?.site?.author ?? blogConfig.author,
@@ -135,36 +105,14 @@ export function resolveSiteConfig(
       webApp512: config?.site?.icons?.webApp512 || blogConfig.icons.webApp512,
     },
     theme: {
-      default: {
-        navBarName:
-          config?.site?.theme?.default?.navBarName ??
-          blogConfig.theme.default.navBarName,
-        background: configDefaultBackground
-          ? {
-              homeImage: configDefaultBackground.homeImage ?? "",
-              globalImage: configDefaultBackground.globalImage ?? "",
-              light: {
-                opacity: configDefaultBackground.light?.opacity ?? 0.15,
-              },
-              dark: {
-                opacity: configDefaultBackground.dark?.opacity ?? 0.1,
-              },
-              backdropBlur: configDefaultBackground.backdropBlur ?? 8,
-              transitionDuration:
-                configDefaultBackground.transitionDuration ?? 600,
-            }
-          : undefined,
-      },
-      fuwari: {
-        homeBg:
-          config?.site?.theme?.fuwari?.homeBg ?? blogConfig.theme.fuwari.homeBg,
-        avatar:
-          config?.site?.theme?.fuwari?.avatar ?? blogConfig.theme.fuwari.avatar,
-        primaryHue:
-          config?.site?.theme?.fuwari?.primaryHue ??
-          blogConfig.theme.fuwari.primaryHue,
-        banner: resolveFuwariBannerCrop(config?.site?.theme?.fuwari?.banner),
-      },
+      default: normalizeDefaultThemeSiteConfig({
+        input: config?.site?.theme?.default,
+        fallback: blogConfig.theme.default,
+      }),
+      fuwari: normalizeFuwariThemeSiteConfig({
+        input: config?.site?.theme?.fuwari,
+        fallback: blogConfig.theme.fuwari,
+      }),
     },
   });
 }
