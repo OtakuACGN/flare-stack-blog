@@ -62,6 +62,7 @@ function AdminLayout() {
         <header className="h-20 border-b border-border/30 bg-background flex items-center justify-between px-6 md:px-10 sticky top-0 z-30 shrink-0">
           <div className="flex items-center gap-4">
             <button
+              type="button"
               onClick={() => setIsMobileSidebarOpen(true)}
               className="lg:hidden p-2 hover:bg-muted/50 rounded-sm transition-colors text-foreground"
               aria-label={m.admin_layout_open_navigation()}

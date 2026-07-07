@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ClientOnly } from "@tanstack/react-router";
 import { X } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
@@ -18,6 +18,7 @@ import {
 import type { PostRevisionSnapshot } from "@/features/posts/schema/post-revisions.schema";
 import { TAGS_KEYS } from "@/features/tags/queries";
 import { useDelayUnmount } from "@/hooks/use-delay-unmount";
+import { useDialogFocus } from "@/hooks/use-dialog-focus";
 import { cn, formatDate } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 import {
@@ -73,6 +74,13 @@ function HistoryPanelInternal({
   onRestoreApplied,
 }: PostEditorHistoryPanelProps) {
   const queryClient = useQueryClient();
+  const panelRef = useRef<HTMLElement>(null);
+  const titleId = useId();
+  const subtitleId = useId();
+  const { handleDialogKeyDown } = useDialogFocus({
+    isOpen,
+    dialogRef: panelRef,
+  });
   const [selectedRevisionId, setSelectedRevisionId] = useState<number | null>(
     null,
   );
@@ -283,6 +291,17 @@ function HistoryPanelInternal({
   // Use established hook for exit animation lifecycle
   const shouldRender = useDelayUnmount(isOpen, 500);
 
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [isOpen]);
+
   if (!shouldRender) return null;
 
   return (
@@ -318,7 +337,9 @@ function HistoryPanelInternal({
       />
 
       {/* Backdrop */}
-      <div
+      <button
+        type="button"
+        aria-label={m.common_close()}
         className={cn(
           "fixed inset-0 z-90 bg-background/50 backdrop-blur-sm transition-all duration-500",
           isOpen ? "opacity-100" : "opacity-0",
@@ -328,6 +349,21 @@ function HistoryPanelInternal({
 
       {/* Panel */}
       <aside
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        aria-describedby={subtitleId}
+        tabIndex={-1}
+        onKeyDown={(event) => {
+          if (event.key === "Escape") {
+            event.stopPropagation();
+            onClose();
+            return;
+          }
+
+          handleDialogKeyDown(event);
+        }}
         className={cn(
           "fixed inset-y-0 right-0 z-91 flex w-full max-w-full flex-col border-l border-border/40 bg-background/95 shadow-2xl backdrop-blur lg:max-w-[84vw] 2xl:max-w-[80vw] duration-500",
           isOpen
@@ -340,10 +376,10 @@ function HistoryPanelInternal({
             <p className="text-[10px] font-mono uppercase tracking-[0.24em] text-muted-foreground/60">
               {m.editor_history_eyebrow()}
             </p>
-            <h2 className="text-2xl font-serif text-foreground">
+            <h2 id={titleId} className="text-2xl font-serif text-foreground">
               {m.editor_history_title()}
             </h2>
-            <p className="text-sm text-muted-foreground/70">
+            <p id={subtitleId} className="text-sm text-muted-foreground/70">
               {m.editor_history_subtitle()}
             </p>
           </div>

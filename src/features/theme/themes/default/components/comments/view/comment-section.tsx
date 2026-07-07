@@ -5,7 +5,7 @@ import { LogIn } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Turnstile, useTurnstile } from "@/components/common/turnstile";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
 import { useComments } from "@/features/comments/hooks/use-comments";
 import { rootCommentsByPostIdInfiniteQuery } from "@/features/comments/queries";
@@ -176,14 +176,16 @@ export const CommentSection = ({ postId, className }: CommentSectionProps) => {
           <p className="text-xs font-mono text-muted-foreground/60 tracking-wider">
             {m.comments_join_discussion()}
           </p>
-          <Link to="/login">
-            <Button
-              variant="outline"
-              className="h-10 px-6 text-[10px] uppercase tracking-[0.25em] font-bold border-border/40 bg-transparent hover:bg-foreground hover:text-background transition-all"
-            >
-              <LogIn size={12} className="mr-2.5 opacity-70" />
-              {m.comments_login()}
-            </Button>
+          <Link
+            to="/login"
+            className={buttonVariants({
+              variant: "outline",
+              className:
+                "h-10 px-6 text-[10px] uppercase tracking-[0.25em] font-bold border-border/40 bg-transparent hover:bg-foreground hover:text-background transition-all",
+            })}
+          >
+            <LogIn size={12} className="mr-2.5 opacity-70" />
+            {m.comments_login()}
           </Link>
         </div>
       )}
@@ -212,6 +214,7 @@ export const CommentSection = ({ postId, className }: CommentSectionProps) => {
       {hasNextPage && (
         <div className="flex justify-center pt-8">
           <Button
+            type="button"
             variant="outline"
             onClick={() => fetchNextPage()}
             disabled={isFetchingNextPage}

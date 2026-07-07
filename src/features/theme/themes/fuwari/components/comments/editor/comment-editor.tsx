@@ -90,6 +90,7 @@ export const FuwariCommentEditor = ({
         <div className="flex items-center gap-3">
           {onCancel && (
             <button
+              type="button"
               onClick={onCancel}
               className="fuwari-text-50 text-sm hover:fuwari-text-75 transition-colors"
             >
@@ -97,6 +98,7 @@ export const FuwariCommentEditor = ({
             </button>
           )}
           <button
+            type="button"
             disabled={isEmpty || isSubmitting}
             onClick={handleSubmit}
             className="fuwari-btn-primary h-8 px-4 text-sm rounded-lg gap-2 disabled:opacity-40 disabled:cursor-not-allowed"

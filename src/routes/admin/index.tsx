@@ -135,6 +135,8 @@ function DashboardOverview() {
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
+                  type="button"
+                  aria-label={m.admin_overview_refresh()}
                   onClick={() => refreshDashboardCacheMutation.mutate({})}
                   disabled={isFetching}
                   className="text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50 p-2 hover:bg-muted/30 rounded-sm"

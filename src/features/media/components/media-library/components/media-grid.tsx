@@ -1,5 +1,6 @@
 import { Check, Film, Image as ImageIcon } from "lucide-react";
 import { memo, useEffect, useRef, useState } from "react";
+import type { KeyboardEvent } from "react";
 import { getOptimizedImageUrl } from "@/features/media/utils/media.utils";
 import { formatBytes } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
@@ -64,9 +65,21 @@ const MediaCard = memo(
       },
     );
 
+    const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+
+      event.preventDefault();
+      handleStandardClick();
+    };
+
     return (
       <div
         {...longPressHandlers}
+        role="button"
+        tabIndex={0}
+        aria-label={asset.fileName}
+        aria-pressed={selectionModeActive ? isSelected : undefined}
+        onKeyDown={handleKeyDown}
         className={`group relative flex flex-col cursor-pointer transition-all duration-300 touch-manipulation select-none overflow-hidden rounded-none border ${
           isSelected
             ? "border-foreground bg-accent/20"
@@ -76,7 +89,10 @@ const MediaCard = memo(
         }`}
       >
         {/* Selection Indicator (Top Left) */}
-        <div
+        <button
+          type="button"
+          aria-label={asset.fileName}
+          aria-pressed={isSelected}
           className={`absolute top-0 left-0 z-30 p-2 transition-all duration-200 ${
             isSelected ? "opacity-100" : "opacity-0 group-hover:opacity-100"
           }`}
@@ -100,7 +116,7 @@ const MediaCard = memo(
               <Check size={10} className="text-background" strokeWidth={3} />
             )}
           </div>
-        </div>
+        </button>
 
         {/* Linked Indicator */}
         {isLinked && (
@@ -199,6 +215,7 @@ export function MediaGrid({
           </span>
           {onRefetch && (
             <button
+              type="button"
               onClick={onRefetch}
               className="text-[10px] uppercase tracking-widest font-bold hover:underline opacity-50 hover:opacity-100"
             >

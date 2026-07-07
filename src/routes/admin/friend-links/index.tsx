@@ -90,7 +90,9 @@ function FriendLinksAdminPage() {
           <nav className="flex items-center gap-8 overflow-x-auto no-scrollbar">
             {tabs.map((tab) => (
               <button
+                type="button"
                 key={tab.key}
+                aria-current={status === tab.key ? "page" : undefined}
                 onClick={() => handleStatusChange(tab.key)}
                 className={`
                   relative text-[10px] uppercase tracking-[0.2em] transition-all whitespace-nowrap font-mono

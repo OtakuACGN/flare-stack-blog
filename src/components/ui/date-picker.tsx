@@ -4,7 +4,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import type React from "react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { m } from "@/paraglide/messages";
 import { getLocale } from "@/paraglide/runtime";
 
@@ -21,6 +21,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const calendarId = useId();
 
   // Parse initial value or default to today
   const initialDate = value ? new Date(value) : new Date();
@@ -68,6 +69,17 @@ const DatePicker: React.FC<DatePickerProps> = ({
     setViewDate(newDate);
   };
 
+  const formatMonthLabel = (offset = 0) => {
+    return new Date(
+      viewDate.getFullYear(),
+      viewDate.getMonth() + offset,
+      1,
+    ).toLocaleString(localeTag, {
+      month: "long",
+      year: "numeric",
+    });
+  };
+
   const handleDayClick = (day: number) => {
     const year = viewDate.getFullYear();
     const month = (viewDate.getMonth() + 1).toString().padStart(2, "0");
@@ -111,6 +123,13 @@ const DatePicker: React.FC<DatePickerProps> = ({
       slots.push(
         <button
           key={i}
+          type="button"
+          aria-pressed={selected}
+          aria-label={new Date(
+            viewDate.getFullYear(),
+            viewDate.getMonth(),
+            i,
+          ).toLocaleDateString(localeTag, { dateStyle: "medium" })}
           onClick={() => handleDayClick(i)}
           className={`
             w-8 h-8 text-[11px] font-mono flex items-center justify-center transition-all relative
@@ -134,11 +153,21 @@ const DatePicker: React.FC<DatePickerProps> = ({
   };
 
   return (
-    <div className={`relative ${className}`} ref={containerRef}>
-      <div
+    <div
+      className={`relative ${className}`}
+      ref={containerRef}
+      onKeyDown={(event) => {
+        if (event.key === "Escape") setIsOpen(false);
+      }}
+    >
+      <button
+        type="button"
+        aria-haspopup="dialog"
+        aria-expanded={isOpen}
+        aria-controls={isOpen ? calendarId : undefined}
         onClick={() => setIsOpen(!isOpen)}
         className={`
-            relative w-full bg-transparent border-b border-border/40 text-sm font-light pl-8 pr-4 py-3 cursor-pointer select-none transition-all
+            relative w-full bg-transparent border-b border-border/40 text-sm font-light pl-8 pr-4 py-3 cursor-pointer select-none transition-all text-left
             ${isOpen ? "border-foreground" : "hover:border-foreground/50"}
         `}
       >
@@ -152,10 +181,15 @@ const DatePicker: React.FC<DatePickerProps> = ({
         <span className={value ? "opacity-100" : "opacity-40"}>
           {value || m.common_select_date()}
         </span>
-      </div>
+      </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 z-50 mt-2 bg-popover border border-border/30 p-4 w-70 animate-in fade-in duration-200">
+        <div
+          id={calendarId}
+          role="dialog"
+          aria-label={m.common_select_date()}
+          className="absolute top-full left-0 z-50 mt-2 bg-popover border border-border/30 p-4 w-70 animate-in fade-in duration-200"
+        >
           {/* Header */}
           <div className="flex items-center justify-between mb-4">
             <h4 className="text-sm font-serif font-medium text-foreground">
@@ -166,12 +200,16 @@ const DatePicker: React.FC<DatePickerProps> = ({
             </h4>
             <div className="flex items-center gap-1">
               <button
+                type="button"
+                aria-label={formatMonthLabel(-1)}
                 onClick={() => changeMonth(-1)}
                 className="text-muted-foreground/50 hover:text-foreground transition-colors p-1"
               >
                 <ChevronLeft size={14} strokeWidth={1.5} />
               </button>
               <button
+                type="button"
+                aria-label={formatMonthLabel(1)}
                 onClick={() => changeMonth(1)}
                 className="text-muted-foreground/50 hover:text-foreground transition-colors p-1"
               >

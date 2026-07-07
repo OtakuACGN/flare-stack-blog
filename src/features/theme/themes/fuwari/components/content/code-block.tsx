@@ -94,6 +94,7 @@ export const CodeBlock = memo(
 
           {/* Custom Copy Button (Expressive Code Style) */}
           <button
+            type="button"
             onClick={handleCopy}
             aria-label={m.common_copy_code()}
             className={cn(
@@ -157,6 +158,7 @@ export const CodeBlock = memo(
               )}
             >
               <button
+                type="button"
                 onClick={() => setIsCollapsed(false)}
                 disabled={!isCollapsed}
                 className="pointer-events-auto flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium text-black/50 hover:text-black/70 dark:text-white/50 dark:hover:text-white/70 bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10 transition-all active:scale-[0.98] backdrop-blur-md"

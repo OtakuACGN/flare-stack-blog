@@ -214,6 +214,7 @@ export function ProfilePage({
                   {m.profile_email_notify_desc_fuwari()}
                 </p>
                 <button
+                  type="button"
                   disabled={notification.isLoading || notification.isPending}
                   onClick={notification.toggle}
                   className={cn(
@@ -256,6 +257,7 @@ export function ProfilePage({
             )}
 
             <button
+              type="button"
               onClick={logout}
               className="w-full bg-red-50 text-red-500 hover:bg-red-100 dark:bg-red-500/10 dark:hover:bg-red-500/20 py-3 rounded-xl flex items-center justify-center gap-2 font-bold text-sm active:scale-95 transition-all"
             >

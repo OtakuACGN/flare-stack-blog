@@ -69,6 +69,7 @@ export function Tags() {
       {showToggle && (
         <div className="px-4 pt-2 flex justify-center">
           <button
+            type="button"
             onClick={() => setIsExpanded(!isExpanded)}
             className="w-full py-2 flex items-center justify-center gap-1 text-sm fuwari-text-50 hover:text-(--fuwari-primary) transition-colors"
           >

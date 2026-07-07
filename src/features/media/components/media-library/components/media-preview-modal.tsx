@@ -15,7 +15,7 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,6 +23,7 @@ import { getLinkedPostsFn } from "@/features/media/api/media.api";
 import type { MediaAsset } from "@/features/media/components/media-library/types";
 import { MEDIA_KEYS } from "@/features/media/queries";
 import { useDelayUnmount } from "@/hooks/use-delay-unmount";
+import { useDialogFocus } from "@/hooks/use-dialog-focus";
 import { cn, formatBytes } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 
@@ -41,6 +42,12 @@ export function MediaPreviewModal({
 }: MediaPreviewModalProps) {
   const isMounted = !!asset;
   const shouldRender = useDelayUnmount(isMounted, 200);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const titleId = useId();
+  const { handleDialogKeyDown } = useDialogFocus({
+    isOpen: isMounted,
+    dialogRef,
+  });
 
   // Persist asset during exit animation
   const [activeAsset, setActiveAsset] = useState<MediaAsset | null>(asset);
@@ -59,6 +66,17 @@ export function MediaPreviewModal({
       setIsDeleting(false);
     }
   }, [asset]);
+
+  useEffect(() => {
+    if (!isMounted) return;
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [isMounted]);
 
   const handleSaveName = async () => {
     if (!activeAsset || !editName.trim()) return;
@@ -130,12 +148,15 @@ export function MediaPreviewModal({
 
   return (
     <div
+      aria-hidden={!isMounted}
       className={`fixed inset-0 z-100 flex items-center justify-center p-4 md:p-8 ${
         isMounted ? "pointer-events-auto" : "opacity-0 pointer-events-none"
       }`}
     >
       {/* Backdrop */}
-      <div
+      <button
+        type="button"
+        aria-label={m.common_close()}
         className={`absolute inset-0 bg-background/95 backdrop-blur-md transition-all duration-500 ${
           isMounted ? "opacity-100" : "opacity-0"
         }`}
@@ -146,6 +167,7 @@ export function MediaPreviewModal({
       <Button
         variant="ghost"
         size="icon"
+        aria-label={m.common_close()}
         onClick={onClose}
         className={`absolute top-4 right-4 z-110 text-muted-foreground hover:text-foreground transition-all duration-500 rounded-none h-12 w-12 ${
           isMounted ? "opacity-100 scale-100" : "opacity-0 scale-90"
@@ -155,6 +177,20 @@ export function MediaPreviewModal({
       </Button>
 
       <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+        onKeyDown={(event) => {
+          if (event.key === "Escape") {
+            event.stopPropagation();
+            onClose();
+            return;
+          }
+
+          handleDialogKeyDown(event);
+        }}
         className={`
         w-full max-w-6xl h-full md:h-[85vh] flex flex-col md:flex-row bg-background border border-border/30 shadow-none relative overflow-hidden z-10 rounded-none
         ${
@@ -180,6 +216,9 @@ export function MediaPreviewModal({
         <div className="flex-1 md:w-1/3 flex flex-col min-h-0 bg-background">
           {/* Header */}
           <div className="p-6 md:p-8 border-b border-border/30">
+            <span id={titleId} className="sr-only">
+              {activeAsset.fileName}
+            </span>
             <div className="text-xs font-mono text-muted-foreground uppercase tracking-[0.3em] mb-4">
               {m.media_preview_details()}
             </div>
@@ -188,12 +227,14 @@ export function MediaPreviewModal({
               <div className="flex items-center gap-3">
                 <Input
                   type="text"
+                  aria-label={m.media_preview_details()}
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
                   className="flex-1 h-9 text-base font-mono bg-muted/10 border-b border-border/50 rounded-none px-0 focus:border-foreground focus:ring-0"
                   autoFocus
                 />
                 <Button
+                  aria-label={m.editor_insert_confirm()}
                   onClick={handleSaveName}
                   disabled={isSaving}
                   variant="default"
@@ -207,6 +248,7 @@ export function MediaPreviewModal({
                   )}
                 </Button>
                 <Button
+                  aria-label={m.common_cancel()}
                   onClick={() => setIsEditing(false)}
                   disabled={isSaving}
                   variant="ghost"
@@ -224,6 +266,7 @@ export function MediaPreviewModal({
                 <Button
                   variant="ghost"
                   size="icon"
+                  aria-label={m.media_preview_details()}
                   onClick={() => setIsEditing(true)}
                   className="h-6 w-6 text-muted-foreground hover:text-foreground transition-colors opacity-0 group-hover/edit:opacity-100 rounded-none"
                 >

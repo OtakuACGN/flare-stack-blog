@@ -1,5 +1,5 @@
 import { ArrowLeft } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { useEffect, useId, useRef } from "react";
 import type { SearchPageProps } from "@/features/theme/contract/pages";
 import { m } from "@/paraglide/messages";
 
@@ -12,6 +12,7 @@ export function SearchPage({
   onBack,
 }: SearchPageProps) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const inputId = useId();
 
   useEffect(() => {
     setTimeout(() => inputRef.current?.focus(), 100);
@@ -21,6 +22,7 @@ export function SearchPage({
     <div className="w-full max-w-3xl mx-auto px-6 md:px-0 py-12 md:py-20">
       <header className="flex items-center justify-between mb-12">
         <button
+          type="button"
           onClick={onBack}
           className="group flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
         >
@@ -37,15 +39,20 @@ export function SearchPage({
       <section className="mb-16">
         <div className="relative flex items-center gap-4 border-b border-border/30 pb-4 focus-within:border-foreground transition-all">
           <div className="flex-1">
-            <label className="block text-[10px] font-mono text-muted-foreground uppercase tracking-widest mb-1 opacity-50">
+            <label
+              htmlFor={inputId}
+              className="block text-[10px] font-mono text-muted-foreground uppercase tracking-widest mb-1 opacity-50"
+            >
               {m.search_input_label()}
             </label>
             <input
+              id={inputId}
               ref={inputRef}
               type="text"
               value={query}
               onChange={(e) => onQueryChange(e.target.value)}
               placeholder="..."
+              autoFocus
               className="w-full bg-transparent text-4xl md:text-5xl font-serif text-foreground placeholder:text-muted-foreground/10 focus:outline-none rounded-none selection:bg-foreground selection:text-background"
             />
           </div>
@@ -63,10 +70,11 @@ export function SearchPage({
 
         {results.map((result) => {
           return (
-            <div
+            <button
+              type="button"
               key={result.post.id}
               onClick={() => onSelectPost(result.post.slug)}
-              className="group relative cursor-pointer p-4 -mx-4 transition-all duration-300 rounded-lg hover:bg-muted/10"
+              className="group relative w-full cursor-pointer p-4 -mx-4 text-left transition-colors duration-300 rounded-lg hover:bg-muted/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               <div className="flex flex-col gap-2">
                 <div className="flex items-baseline justify-between">
@@ -101,10 +109,11 @@ export function SearchPage({
                   </div>
                 )}
               </div>
-            </div>
+            </button>
           );
         })}
       </section>
     </div>
   );
 }
+

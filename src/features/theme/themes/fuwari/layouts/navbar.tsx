@@ -7,12 +7,18 @@ import type { NavOption, UserInfo } from "@/features/theme/contract/layouts";
 import { m } from "@/paraglide/messages";
 import { LanguageSwitcher } from "./language-switcher";
 
+export interface BannerHeightConfig {
+  minRem: number;
+  preferredVh: number;
+  maxRem: number;
+}
+
 interface NavbarProps {
   navOptions: Array<NavOption>;
   onMenuClick: () => void;
   isLoading?: boolean;
   user?: UserInfo;
-  bannerHeightVh: number;
+  bannerHeight: BannerHeightConfig;
 }
 
 const NAVBAR_HEIGHT_REM = 4.5;
@@ -23,18 +29,26 @@ export function Navbar({
   user,
   navOptions,
   isLoading,
-  bannerHeightVh,
+  bannerHeight,
 }: NavbarProps) {
   const { siteConfig } = useRouteContext({ from: "__root__" });
   const [isHidden, setIsHidden] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
-      // Calculate threshold based on banner height and layout
-      const bannerHeightPx = window.innerHeight * (bannerHeightVh / 100);
-      const navbarHeightPx = NAVBAR_HEIGHT_REM * 16;
-      const mainOverlapPx = MAIN_OVERLAP_REM * 16;
-      const extraPaddingPx = 16;
+      const rootFontSize =
+        Number.parseFloat(
+          window.getComputedStyle(document.documentElement).fontSize,
+        ) || 16;
+      const preferredHeightPx =
+        window.innerHeight * (bannerHeight.preferredVh / 100);
+      const bannerHeightPx = Math.min(
+        Math.max(bannerHeight.minRem * rootFontSize, preferredHeightPx),
+        bannerHeight.maxRem * rootFontSize,
+      );
+      const navbarHeightPx = NAVBAR_HEIGHT_REM * rootFontSize;
+      const mainOverlapPx = MAIN_OVERLAP_REM * rootFontSize;
+      const extraPaddingPx = rootFontSize;
 
       const threshold =
         bannerHeightPx - navbarHeightPx - mainOverlapPx - extraPaddingPx;
@@ -44,11 +58,15 @@ export function Navbar({
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("resize", handleScroll);
     // Initial check
     handleScroll();
 
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [bannerHeightVh]);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleScroll);
+    };
+  }, [bannerHeight]);
 
   return (
     <div

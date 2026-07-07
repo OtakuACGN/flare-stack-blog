@@ -121,6 +121,7 @@ export const FuwariCommentItem = memo(
           {comment.status !== "deleted" && (
             <div className="flex items-center gap-4 pt-1">
               <button
+                type="button"
                 onClick={() => {
                   const rootId = comment.rootId ?? comment.id;
                   onReply?.(
@@ -136,6 +137,7 @@ export const FuwariCommentItem = memo(
 
               {(isAuthor || isAdmin) && (
                 <button
+                  type="button"
                   onClick={() => onDelete?.(comment.id)}
                   className="text-xs fuwari-text-30 hover:text-red-500 transition-colors font-medium"
                 >

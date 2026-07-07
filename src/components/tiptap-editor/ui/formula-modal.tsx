@@ -2,9 +2,10 @@ import { ClientOnly } from "@tanstack/react-router";
 import katex from "katex";
 import { Sigma, SquareFunction, X } from "lucide-react";
 import type React from "react";
-import { memo, useCallback, useEffect, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useDelayUnmount } from "@/hooks/use-delay-unmount";
+import { useDialogFocus } from "@/hooks/use-dialog-focus";
 import { m } from "@/paraglide/messages";
 
 export type FormulaMode = "inline" | "block";
@@ -51,7 +52,16 @@ const FormulaModalInternal: React.FC<FormulaModalProps> = ({
   const shouldRender = useDelayUnmount(isOpen, 300);
   const [latex, setLatex] = useState(initialLatex);
   const [activeMode, setActiveMode] = useState<FormulaMode>(mode);
+  const dialogRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const titleId = useId();
+  const inputId = useId();
+  const previewId = useId();
+  const { handleDialogKeyDown } = useDialogFocus({
+    isOpen,
+    dialogRef,
+    initialFocusRef: inputRef,
+  });
 
   const debouncedLatex = useDebounce(latex, 200);
 
@@ -83,9 +93,19 @@ const FormulaModalInternal: React.FC<FormulaModalProps> = ({
       setActiveMode(mode);
       setPreviewError(null);
       setPreviewHtml(null);
-      requestAnimationFrame(() => inputRef.current?.focus());
     }
   }, [isOpen, initialLatex, mode]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -114,17 +134,26 @@ const FormulaModalInternal: React.FC<FormulaModalProps> = ({
 
   return createPortal(
     <div
+      aria-hidden={!isOpen}
       className={`fixed inset-0 z-100 flex items-end sm:items-center justify-center p-0 sm:p-4 md:p-6 transition-all duration-300 ease-out ${
         isOpen
           ? "opacity-100 pointer-events-auto"
           : "opacity-0 pointer-events-none"
       }`}
     >
-      <div
+      <button
+        type="button"
+        aria-label={m.common_close()}
         className="absolute inset-0 bg-background/80 backdrop-blur-sm"
         onClick={onClose}
       />
       <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+        onKeyDown={handleDialogKeyDown}
         className={`relative w-full sm:max-w-2xl bg-background border border-border shadow-2xl flex flex-col overflow-hidden rounded-t-xl sm:rounded-none max-h-[90vh] sm:max-h-[85vh] transition-all duration-300 ease-out transform ${
           isOpen
             ? "translate-y-0 scale-100 opacity-100"
@@ -141,7 +170,10 @@ const FormulaModalInternal: React.FC<FormulaModalProps> = ({
                 <span className="text-xs uppercase tracking-widest font-mono text-muted-foreground leading-none mb-0.5">
                   FORMULA
                 </span>
-                <span className="text-base font-bold font-mono tracking-wider text-foreground uppercase truncate">
+                <span
+                  id={titleId}
+                  className="text-base font-bold font-mono tracking-wider text-foreground uppercase truncate"
+                >
                   {editContext
                     ? m.editor_formula_edit()
                     : m.editor_formula_insert()}
@@ -151,6 +183,7 @@ const FormulaModalInternal: React.FC<FormulaModalProps> = ({
             <div className="flex gap-1">
               <button
                 type="button"
+                aria-pressed={activeMode === "inline"}
                 onClick={() => setActiveMode("inline")}
                 className={`px-2 py-1 text-xs font-mono uppercase transition-colors ${
                   activeMode === "inline"
@@ -162,6 +195,7 @@ const FormulaModalInternal: React.FC<FormulaModalProps> = ({
               </button>
               <button
                 type="button"
+                aria-pressed={activeMode === "block"}
                 onClick={() => setActiveMode("block")}
                 className={`px-2 py-1 text-xs font-mono uppercase transition-colors ${
                   activeMode === "block"
@@ -175,6 +209,7 @@ const FormulaModalInternal: React.FC<FormulaModalProps> = ({
           </div>
           <button
             type="button"
+            aria-label={m.common_close()}
             onClick={onClose}
             className="p-2 shrink-0 text-muted-foreground hover:text-foreground transition-colors hover:bg-muted/10 -m-2"
           >
@@ -184,10 +219,14 @@ const FormulaModalInternal: React.FC<FormulaModalProps> = ({
 
         <div className="flex flex-col md:flex-row flex-1 min-h-0 p-4 sm:p-6 gap-4 md:gap-6 overflow-auto">
           <div className="flex flex-col min-w-0 shrink-0 md:flex-1">
-            <label className="text-xs uppercase tracking-widest font-mono text-muted-foreground mb-2">
+            <label
+              htmlFor={inputId}
+              className="text-xs uppercase tracking-widest font-mono text-muted-foreground mb-2"
+            >
               LaTeX
             </label>
             <textarea
+              id={inputId}
               ref={inputRef}
               value={latex}
               onChange={(e) => setLatex(e.target.value)}
@@ -197,10 +236,14 @@ const FormulaModalInternal: React.FC<FormulaModalProps> = ({
             />
           </div>
           <div className="flex flex-col min-w-0 shrink-0 md:flex-1 md:border-l md:border-border/50 md:pl-6">
-            <label className="text-xs uppercase tracking-widest font-mono text-muted-foreground mb-2">
+            <label
+              id={previewId}
+              className="text-xs uppercase tracking-widest font-mono text-muted-foreground mb-2"
+            >
               {m.editor_formula_preview()}
             </label>
             <div
+              aria-labelledby={previewId}
               className={`min-h-20 sm:min-h-30 p-3 sm:p-4 border border-border flex items-center justify-center overflow-auto ${
                 previewError ? "bg-destructive/5" : "bg-muted/5"
               }`}

@@ -91,6 +91,7 @@ export const CommentEditor = ({
         <div className="flex items-center gap-4">
           {onCancel && (
             <button
+              type="button"
               onClick={onCancel}
               className="text-[10px] uppercase tracking-widest text-muted-foreground/60 hover:text-foreground transition-colors"
             >
@@ -98,6 +99,7 @@ export const CommentEditor = ({
             </button>
           )}
           <Button
+            type="button"
             size="sm"
             disabled={isEmpty || isSubmitting}
             onClick={handleSubmit}

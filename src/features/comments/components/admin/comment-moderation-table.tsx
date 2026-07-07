@@ -153,6 +153,7 @@ export const CommentModerationTable = ({
               {m.comments_batch_selected({ count: selectedIds.size })}
             </span>
             <button
+              type="button"
               onClick={() => setSelectedIds(new Set())}
               className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
             >

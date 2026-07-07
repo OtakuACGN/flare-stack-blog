@@ -23,6 +23,7 @@ export function NotFound() {
         </div>
 
         <button
+          type="button"
           onClick={onReturn}
           className="text-[10px] font-mono uppercase tracking-[0.3em] text-muted-foreground hover:text-foreground transition-colors duration-300"
         >

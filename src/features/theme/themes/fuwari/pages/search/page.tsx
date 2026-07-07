@@ -27,9 +27,11 @@ export function SearchPage({
         style={{ animationDelay: "100ms" }}
       >
         <button
+          type="button"
           onClick={onBack}
           className="group flex items-center justify-center w-10 h-10 rounded-xl bg-(--fuwari-btn-regular-bg) text-(--fuwari-btn-content) hover:bg-(--fuwari-btn-regular-bg-hover) transition-colors shrink-0"
           title={m.search_back()}
+          aria-label={m.search_back()}
         >
           <ArrowLeft
             size={18}
@@ -93,6 +95,7 @@ export function SearchPage({
 
         {results.map((result, index) => (
           <button
+            type="button"
             key={result.post.id}
             onClick={() => onSelectPost(result.post.slug)}
             className="fuwari-card-base p-6 text-left w-full group hover:-translate-y-1 hover:shadow-lg transition-all duration-300 flex flex-col gap-3 fuwari-onload-animation outline-none focus-visible:ring-2 focus-visible:ring-(--fuwari-primary)/50"

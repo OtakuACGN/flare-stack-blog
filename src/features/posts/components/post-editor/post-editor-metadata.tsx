@@ -1,4 +1,5 @@
 import { Loader2, Pin, PinOff, Sparkles } from "lucide-react";
+import { useId } from "react";
 import TextareaAutosize from "react-textarea-autosize";
 import DatePicker from "@/components/ui/date-picker";
 import { Input } from "@/components/ui/input";
@@ -38,10 +39,17 @@ export function PostEditorMetadata({
   onGenerateSummary,
   onGenerateTags,
 }: PostEditorMetadataProps) {
+  const titleId = useId();
+  const readTimeId = useId();
+  const slugId = useId();
+  const summaryId = useId();
+
   return (
     <>
       <div className="mb-12">
         <TextareaAutosize
+          id={titleId}
+          aria-label={m.editor_title_placeholder()}
           value={post.title}
           onChange={(e) => onPostChange({ title: e.target.value })}
           minRows={1}
@@ -52,13 +60,15 @@ export function PostEditorMetadata({
 
       <div className="mb-16 grid grid-cols-1 gap-x-12 gap-y-8 border-t border-border/30 pt-8 md:grid-cols-3">
         <div className="space-y-3">
-          <label className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground">
+          <span className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground">
             {m.editor_meta_status()}
-          </label>
+          </span>
           <div className="flex items-center gap-4">
             {POST_STATUSES.map((status) => (
               <button
+                type="button"
                 key={status}
+                aria-pressed={post.status === status}
                 onClick={() => onPostChange({ status })}
                 className={`
                   text-[10px] font-mono uppercase tracking-wider transition-colors
@@ -77,11 +87,13 @@ export function PostEditorMetadata({
 
         {post.status === "published" && (
           <div className="space-y-3">
-            <label className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground">
+            <span className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground">
               {m.editor_meta_pin()}
-            </label>
+            </span>
             <div>
               <button
+                type="button"
+                aria-pressed={!!post.pinnedAt}
                 onClick={() =>
                   onPostChange({
                     pinnedAt: post.pinnedAt ? null : new Date(),
@@ -106,9 +118,9 @@ export function PostEditorMetadata({
         )}
 
         <div className="space-y-3">
-          <label className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground">
+          <span className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground">
             {m.editor_meta_published_at()}
-          </label>
+          </span>
           <div className="text-xs font-mono">
             <DatePicker
               value={
@@ -127,11 +139,15 @@ export function PostEditorMetadata({
         </div>
 
         <div className="space-y-3">
-          <label className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground">
+          <label
+            htmlFor={readTimeId}
+            className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground"
+          >
             {m.editor_meta_read_time()}
           </label>
           <div className="group flex items-center gap-2">
             <Input
+              id={readTimeId}
               type="number"
               value={post.readTimeInMinutes}
               onChange={(e) =>
@@ -145,9 +161,11 @@ export function PostEditorMetadata({
               {m.editor_meta_minutes()}
             </span>
             <button
+              type="button"
+              aria-label={`${m.editor_meta_auto_generate()} ${m.editor_meta_read_time()}`}
               onClick={onCalculateReadTime}
               disabled={isCalculatingReadTime}
-              className="ml-2 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 hover:text-foreground"
+              className="ml-2 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 hover:text-foreground focus-visible:opacity-100"
             >
               {isCalculatingReadTime ? (
                 <Loader2 size={10} className="animate-spin" />
@@ -159,7 +177,10 @@ export function PostEditorMetadata({
         </div>
 
         <div className="col-span-1 space-y-3 md:col-span-3">
-          <label className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground">
+          <label
+            htmlFor={slugId}
+            className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground"
+          >
             {m.editor_meta_slug()}
           </label>
           <div className="group flex items-center gap-2">
@@ -167,6 +188,7 @@ export function PostEditorMetadata({
               /post/
             </span>
             <Input
+              id={slugId}
               type="text"
               value={post.slug || ""}
               onChange={(e) => onPostChange({ slug: e.target.value })}
@@ -174,9 +196,11 @@ export function PostEditorMetadata({
               placeholder="your-post-slug"
             />
             <button
+              type="button"
+              aria-label={`${m.editor_meta_auto_generate()} ${m.editor_meta_slug()}`}
               onClick={onGenerateSlug}
               disabled={isGeneratingSlug}
-              className="ml-2 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 hover:text-foreground"
+              className="ml-2 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 hover:text-foreground focus-visible:opacity-100"
             >
               {isGeneratingSlug ? (
                 <Loader2 size={10} className="animate-spin" />
@@ -189,10 +213,11 @@ export function PostEditorMetadata({
 
         <div className="col-span-1 space-y-3 md:col-span-3">
           <div className="flex items-center justify-between">
-            <label className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground">
+            <span className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground">
               {m.editor_meta_tags()}
-            </label>
+            </span>
             <button
+              type="button"
               onClick={onGenerateTags}
               disabled={isGeneratingTags}
               className="flex items-center gap-1 text-[9px] font-mono text-muted-foreground transition-colors hover:text-foreground"
@@ -213,10 +238,14 @@ export function PostEditorMetadata({
 
         <div className="col-span-1 space-y-3 md:col-span-3">
           <div className="flex items-center justify-between">
-            <label className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground">
+            <label
+              htmlFor={summaryId}
+              className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground"
+            >
               {m.editor_meta_summary()}
             </label>
             <button
+              type="button"
               onClick={onGenerateSummary}
               disabled={isGeneratingSummary}
               className="flex items-center gap-1 text-[9px] font-mono text-muted-foreground transition-colors hover:text-foreground"
@@ -230,6 +259,7 @@ export function PostEditorMetadata({
             </button>
           </div>
           <TextareaAutosize
+            id={summaryId}
             value={post.summary || ""}
             onChange={(e) => onPostChange({ summary: e.target.value })}
             placeholder={m.editor_summary_placeholder()}

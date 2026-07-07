@@ -1,18 +1,33 @@
 import { useLocation, useRouteContext } from "@tanstack/react-router";
 import { useState } from "react";
+import { BgmPlayer } from "@/components/content/bgm-player";
 import type { PublicLayoutProps } from "@/features/theme/contract/layouts";
 import { BackToTop } from "../components/control/back-to-top";
 import { Sidebar } from "../components/sidebar";
 import { Footer } from "./footer";
 import { MobileMenu } from "./mobile-menu";
-import { Navbar } from "./navbar";
-// 🎯 核心修复：根据你的物理存放位置，使用精确的路径别名引入
-import { BgmPlayer } from "@/components/content/bgm-player"; 
+import { type BannerHeightConfig, Navbar } from "./navbar";
 
-const BANNER_HEIGHT_HOME = 65;
-const BANNER_HEIGHT_PAGE = 35;
+const BANNER_HEIGHT_HOME = {
+  minRem: 18,
+  preferredVh: 58,
+  maxRem: 36,
+} as const satisfies BannerHeightConfig;
+const BANNER_HEIGHT_PAGE = {
+  minRem: 12,
+  preferredVh: 32,
+  maxRem: 22,
+} as const satisfies BannerHeightConfig;
 const MAIN_OVERLAP_REM = 3.5;
 const NAVBAR_HEIGHT_REM = 4.5;
+
+function getBannerHeightCss({
+  minRem,
+  preferredVh,
+  maxRem,
+}: BannerHeightConfig) {
+  return `clamp(${minRem}rem, ${preferredVh}vh, ${maxRem}rem)`;
+}
 
 export function PublicLayout({
   children,
@@ -25,7 +40,9 @@ export function PublicLayout({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
   const isHomePage = location.pathname === "/";
-  const bannerHeightVh = isHomePage ? BANNER_HEIGHT_HOME : BANNER_HEIGHT_PAGE;
+  const bannerHeight = isHomePage ? BANNER_HEIGHT_HOME : BANNER_HEIGHT_PAGE;
+  const bannerHeightCss = getBannerHeightCss(bannerHeight);
+  const homeBg = siteConfig.theme.fuwari.homeBg?.trim();
 
   return (
     <div className="relative min-h-screen bg-[var(--fuwari-page-bg)] transition-colors">
@@ -46,32 +63,44 @@ export function PublicLayout({
             onMenuClick={() => setIsMenuOpen(true)}
             user={user}
             isLoading={isSessionLoading}
-            bannerHeightVh={bannerHeightVh}
+            bannerHeight={bannerHeight}
           />
         </div>
       </div>
 
-      {/* 🖼️ Banner 背景图（传颂之物黄金裁剪版） */}
+      {/* Banner uses a blurred fill layer plus an uncropped foreground image. */}
       <div
-        className="absolute left-0 right-0 top-0 z-10 overflow-hidden transition-[height] duration-300 ease-in-out select-none"
-        style={{ height: `${bannerHeightVh}vh` }}
+        className="absolute left-0 right-0 top-0 z-10 overflow-hidden transition-[height] duration-300 ease-in-out select-none bg-[var(--fuwari-page-bg)]"
+        style={{ height: bannerHeightCss }}
       >
-        <img
-          src={siteConfig.theme.fuwari.homeBg}
-          alt="banner"
-          fetchPriority="high"
-          className="w-full h-full object-cover transition-[object-position] duration-300 ease-in-out"
-          style={{
-            objectPosition: isHomePage ? "40% 35%" : "40% 20%",
-          }}
-        />
+        {homeBg ? (
+          <>
+            <img
+              src={homeBg}
+              alt=""
+              aria-hidden="true"
+              decoding="async"
+              className="absolute inset-0 h-full w-full scale-105 object-cover blur-2xl opacity-50 dark:opacity-40"
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-[var(--fuwari-page-bg)] dark:from-black/30 dark:via-black/10" />
+            <div className="relative z-10 flex h-full w-full items-center justify-center p-2 sm:p-4 md:p-6 lg:p-8">
+              <img
+                src={homeBg}
+                alt="banner"
+                fetchPriority="high"
+                decoding="async"
+                className="h-full w-full object-contain"
+              />
+            </div>
+          </>
+        ) : null}
       </div>
 
       {/* 📄 主内容区域 */}
       <div
         className="relative z-30 transition-[margin-top] duration-300 ease-in-out"
         style={{
-          marginTop: `calc(${bannerHeightVh}vh - ${MAIN_OVERLAP_REM}rem - ${NAVBAR_HEIGHT_REM}rem)`,
+          marginTop: `calc(${bannerHeightCss} - ${MAIN_OVERLAP_REM}rem - ${NAVBAR_HEIGHT_REM}rem)`,
         }}
       >
         <div

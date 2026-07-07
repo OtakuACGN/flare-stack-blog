@@ -1,4 +1,5 @@
 import { ClientOnly } from "@tanstack/react-router";
+import { useDialogFocus } from "@/hooks/use-dialog-focus";
 import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
@@ -27,6 +28,14 @@ function Lightbox({
   isOpen: boolean;
   onClose: () => void;
 }) {
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const { handleDialogKeyDown } = useDialogFocus({
+    isOpen,
+    dialogRef,
+    initialFocusRef: closeButtonRef,
+  });
+
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
@@ -60,8 +69,18 @@ function Lightbox({
     }
   }, [src]);
 
+  const dialogLabel = alt
+    ? `${m.common_image_preview()}: ${alt}`
+    : m.common_image_preview();
+
   return createPortal(
     <div
+      ref={dialogRef}
+      role="dialog"
+      aria-modal="true"
+      aria-label={dialogLabel}
+      tabIndex={-1}
+      onKeyDown={handleDialogKeyDown}
       className={`fixed inset-0 z-200 flex items-center justify-center transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] ${
         isOpen
           ? "opacity-100 pointer-events-auto"
@@ -69,7 +88,10 @@ function Lightbox({
       }`}
     >
       {/* Backdrop */}
-      <div
+      <button
+        type="button"
+        tabIndex={-1}
+        aria-label={m.common_close()}
         className="absolute inset-0 bg-background/98 backdrop-blur-xl"
         onClick={onClose}
       />
@@ -101,7 +123,13 @@ function Lightbox({
               {m.media_preview_btn_download()}
             </span>
           </a>
-          <button onClick={onClose} className="group flex items-center gap-2">
+          <button
+            ref={closeButtonRef}
+            type="button"
+            onClick={onClose}
+            className="group flex items-center gap-2"
+            aria-label={m.common_close()}
+          >
             <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground group-hover:text-foreground transition-colors">
               {m.common_close()}
             </span>
@@ -119,6 +147,7 @@ function Lightbox({
           src={src}
           alt={alt}
           loading="eager"
+          decoding="async"
           className="max-w-full max-h-full object-contain shadow-none"
         />
       </div>
@@ -148,14 +177,19 @@ export default function ZoomableImage({
   }, []);
 
   const isPortrait = !!(width && height && height > width);
+  const viewFullImageLabel = alt
+    ? `${m.common_view_full_image()}: ${alt}`
+    : m.common_view_full_image();
 
   if (!src) return null;
 
   return (
     <>
-      <div
+      <button
+        type="button"
+        aria-label={viewFullImageLabel}
         className={cn(
-          "relative group cursor-zoom-in block overflow-hidden bg-muted/20",
+          "relative group cursor-zoom-in block overflow-hidden bg-muted/20 appearance-none border-0 p-0 text-left",
           isPortrait
             ? "flex items-center justify-center w-full max-h-[70vh]"
             : "w-full max-h-[80vh]",
@@ -171,6 +205,8 @@ export default function ZoomableImage({
           ref={imgRef}
           src={src}
           alt={alt}
+          width={width}
+          height={height}
           loading="lazy"
           decoding="async"
           onLoad={() => setIsLoaded(true)}
@@ -194,7 +230,7 @@ export default function ZoomableImage({
             </div>
           </div>
         )}
-      </div>
+      </button>
 
       {/* Lightbox Portal - Client Only */}
       <ClientOnly>

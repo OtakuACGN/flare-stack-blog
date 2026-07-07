@@ -2,6 +2,7 @@ import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { ClientOnly } from "@tanstack/react-router";
 import { Loader2, X } from "lucide-react";
 import type { ComponentProps } from "react";
+import { useId, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import type { CreateFriendLinkInput } from "@/features/friend-links/friend-links.schema";
 import { createCreateFriendLinkSchema } from "@/features/friend-links/friend-links.schema";
 import { useAdminFriendLinks } from "@/features/friend-links/hooks/use-friend-links";
+import { useDialogFocus } from "@/hooks/use-dialog-focus";
 import { m } from "@/paraglide/messages";
 
 interface AddFriendLinkModalProps {
@@ -21,6 +23,9 @@ const AddFriendLinkModalInternal = ({
   onClose,
 }: AddFriendLinkModalProps) => {
   const { create, isCreating } = useAdminFriendLinks();
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const titleId = useId();
+  const descriptionId = useId();
   const form = useForm<CreateFriendLinkInput>({
     resolver: standardSchemaResolver(createCreateFriendLinkSchema(m)),
     defaultValues: {
@@ -40,6 +45,7 @@ const AddFriendLinkModalInternal = ({
   } = form;
 
   const [siteName, siteUrl] = watch(["siteName", "siteUrl"]);
+  const { handleDialogKeyDown } = useDialogFocus({ isOpen, dialogRef });
 
   const handleClose = () => {
     reset();
@@ -70,21 +76,34 @@ const AddFriendLinkModalInternal = ({
 
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div
+      <button
+        type="button"
+        aria-label={m.common_close()}
         className="fixed inset-0 bg-background/80 backdrop-blur-sm animate-in fade-in duration-200"
         onClick={handleClose}
       />
-      <div className="relative bg-background border border-border/30 p-8 max-w-md w-full mx-4 animate-in fade-in zoom-in-95 duration-200 shadow-lg">
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        aria-describedby={descriptionId}
+        tabIndex={-1}
+        onKeyDown={handleDialogKeyDown}
+        className="relative bg-background border border-border/30 p-8 max-w-md w-full mx-4 animate-in fade-in zoom-in-95 duration-200 shadow-lg"
+      >
         <button
+          type="button"
+          aria-label={m.common_close()}
           onClick={handleClose}
           className="absolute right-4 top-4 text-muted-foreground/50 hover:text-foreground transition-colors"
         >
           <X size={16} strokeWidth={1.5} />
         </button>
-        <h3 className="text-xl font-serif font-medium mb-6">
+        <h3 id={titleId} className="text-xl font-serif font-medium mb-6">
           {m.friend_links_add_modal_title()}
         </h3>
-        <p className="text-sm text-muted-foreground mb-6">
+        <p id={descriptionId} className="text-sm text-muted-foreground mb-6">
           {m.friend_links_add_modal_desc()}
         </p>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -165,13 +184,19 @@ function ModalFormField({
   error?: string;
   inputProps: ComponentProps<typeof Input>;
 }) {
+  const inputId = useId();
+
   return (
     <div className="space-y-1.5">
-      <label className="text-xs font-mono text-muted-foreground uppercase tracking-wider">
+      <label
+        htmlFor={inputId}
+        className="text-xs font-mono text-muted-foreground uppercase tracking-wider"
+      >
         {label}
       </label>
       <Input
         {...inputProps}
+        id={inputId}
         placeholder={placeholder}
         className="bg-transparent border-0 border-b border-border/50 text-base px-0 rounded-none focus-visible:ring-0 focus-visible:border-foreground transition-all shadow-none h-auto py-1.5 placeholder:text-muted-foreground/30"
       />

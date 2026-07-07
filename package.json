@@ -11,7 +11,7 @@
   "private": true,
   "scripts": {
     "dev": "vite dev --port 3000",
-    "build": "bun scripts/generate-manifest.ts && vite build",
+    "build": "node scripts/generate-manifest.mjs && node --max-old-space-size=4096 ./node_modules/vite/bin/vite.js build",
     "deploy": "bun db:migrate && wrangler deploy",
     "serve": "vite preview",
     "test": "vitest run",
@@ -20,7 +20,7 @@
     "lint:fix": "biome check --write",
     "format": "biome format --write",
     "typecheck": "tsc --noEmit --incremental --tsBuildInfoFile .cache/typecheck.tsbuildinfo",
-    "check": "biome check --write && bun typecheck",
+    "check": "biome check --write && npm run typecheck",
     "i18n:compile": "bun paraglide-js compile --project ./project.inlang --outdir ./src/paraglide",
     "i18n:verify": "bun scripts/verify-translations.ts",
     "i18n:prune-unused": "bun scripts/prune-unused-translations.ts",

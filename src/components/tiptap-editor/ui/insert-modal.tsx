@@ -9,12 +9,13 @@ import {
   X,
 } from "lucide-react";
 import type React from "react";
-import { memo, useEffect, useRef, useState } from "react";
+import { memo, useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useMediaPicker } from "@/features/media/components/media-library/hooks";
 import type { MediaAsset } from "@/features/media/components/media-library/types";
 import { getOptimizedImageUrl } from "@/features/media/utils/media.utils";
 import { useDelayUnmount } from "@/hooks/use-delay-unmount";
+import { useDialogFocus } from "@/hooks/use-dialog-focus";
 import { m } from "@/paraglide/messages";
 
 export type ModalType = "LINK" | "IMAGE" | null;
@@ -39,10 +40,13 @@ const MediaItem = memo(
     const [isLoaded, setIsLoaded] = useState(false);
 
     return (
-      <div
+      <button
+        type="button"
+        aria-label={media.fileName}
+        aria-pressed={isSelected}
         onClick={() => onSelect(media)}
         className={`
-                relative aspect-square border cursor-pointer transition-all duration-500 bg-muted/30 group overflow-hidden rounded-sm
+                relative aspect-square border cursor-pointer transition-all duration-500 bg-muted/30 group overflow-hidden rounded-sm text-left
                 ${
                   isSelected
                     ? "border-primary opacity-100 shadow-lg"
@@ -73,7 +77,7 @@ const MediaItem = memo(
             </div>
           </div>
         )}
-      </div>
+      </button>
     );
   },
 );
@@ -89,6 +93,16 @@ const InsertModalInternal: React.FC<InsertModalProps> = ({
   const isMounted = !!type;
   const shouldRender = useDelayUnmount(isMounted, 500);
   const [activeType, setActiveType] = useState<ModalType>(type);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const initialFocusRef = useRef<HTMLInputElement>(null);
+  const titleId = useId();
+  const urlInputId = useId();
+  const searchInputId = useId();
+  const { handleDialogKeyDown } = useDialogFocus({
+    isOpen: isMounted,
+    dialogRef,
+    initialFocusRef,
+  });
 
   useEffect(() => {
     if (type) setActiveType(type);
@@ -134,6 +148,17 @@ const InsertModalInternal: React.FC<InsertModalProps> = ({
     }
   }, [initialUrl, type, setSearchQuery]);
 
+  useEffect(() => {
+    if (!isMounted) return;
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [isMounted]);
+
   const handleSubmit = () => {
     const trimmed = inputUrl.trim();
     if (activeType === "LINK") {
@@ -158,6 +183,7 @@ const InsertModalInternal: React.FC<InsertModalProps> = ({
 
   return createPortal(
     <div
+      aria-hidden={!isMounted}
       className={`fixed inset-0 z-100 flex items-center justify-center p-4 md:p-6 transition-all duration-300 ease-out ${
         isMounted
           ? "opacity-100 pointer-events-auto"
@@ -165,13 +191,29 @@ const InsertModalInternal: React.FC<InsertModalProps> = ({
       }`}
     >
       {/* Backdrop */}
-      <div
+      <button
+        type="button"
+        aria-label={m.common_close()}
         className="absolute inset-0 bg-background/80 backdrop-blur-sm"
         onClick={onClose}
       />
 
       {/* Modal Content - Command Palette Style */}
       <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+        onKeyDown={(event) => {
+          if (event.key === "Escape") {
+            event.stopPropagation();
+            onClose();
+            return;
+          }
+
+          handleDialogKeyDown(event);
+        }}
         className={`
             relative w-full max-w-2xl bg-background border border-border shadow-2xl 
             flex flex-col overflow-hidden rounded-none max-h-[80vh] transition-all duration-300 ease-out transform
@@ -196,7 +238,10 @@ const InsertModalInternal: React.FC<InsertModalProps> = ({
               <span className="text-xs uppercase tracking-widest font-mono text-muted-foreground leading-none mb-1">
                 COMMAND
               </span>
-              <span className="text-base font-bold font-mono tracking-wider text-foreground uppercase">
+              <span
+                id={titleId}
+                className="text-base font-bold font-mono tracking-wider text-foreground uppercase"
+              >
                 {activeType === "LINK"
                   ? m.editor_insert_link_title()
                   : m.editor_insert_media_title()}
@@ -205,6 +250,7 @@ const InsertModalInternal: React.FC<InsertModalProps> = ({
           </div>
           <button
             type="button"
+            aria-label={m.common_close()}
             onClick={onClose}
             className="p-2 text-muted-foreground hover:text-foreground transition-colors hover:bg-muted/10"
           >
@@ -222,7 +268,9 @@ const InsertModalInternal: React.FC<InsertModalProps> = ({
                   size={14}
                 />
                 <input
+                  id={searchInputId}
                   type="text"
+                  aria-label={m.editor_insert_search_placeholder()}
                   placeholder={m.editor_insert_search_placeholder()}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -282,7 +330,10 @@ const InsertModalInternal: React.FC<InsertModalProps> = ({
           <div className="p-6 space-y-4 border-t border-border/50 bg-background">
             <div className="flex items-center gap-2 mb-2">
               <Globe size={12} className="text-muted-foreground" />
-              <label className="text-xs uppercase tracking-widest font-mono text-muted-foreground">
+              <label
+                htmlFor={urlInputId}
+                className="text-xs uppercase tracking-widest font-mono text-muted-foreground"
+              >
                 {activeType === "IMAGE"
                   ? m.editor_insert_external_link()
                   : m.editor_insert_target_url()}
@@ -291,6 +342,8 @@ const InsertModalInternal: React.FC<InsertModalProps> = ({
             <div className="group relative">
               <span className="absolute left-0 top-1/2 -translate-y-1/2 text-muted-foreground font-mono text-sm pointer-events-none group-focus-within:text-foreground transition-colors"></span>
               <input
+                id={urlInputId}
+                ref={initialFocusRef}
                 type="text"
                 autoFocus={activeType === "LINK"}
                 value={inputUrl}

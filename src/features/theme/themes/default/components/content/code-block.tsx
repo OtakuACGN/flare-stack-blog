@@ -71,6 +71,7 @@ export const CodeBlock = memo(
             </div>
 
             <button
+              type="button"
               onClick={handleCopy}
               aria-label={m.common_copy_code()}
               className="flex items-center gap-2 text-xs font-mono text-muted-foreground hover:text-foreground transition-all duration-300"

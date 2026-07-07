@@ -40,9 +40,17 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
   }, []);
 
   return (
-    <div className={`relative ${className}`} ref={dropdownRef}>
+    <div
+      className={`relative ${className}`}
+      ref={dropdownRef}
+      onKeyDown={(event) => {
+        if (event.key === "Escape") setIsOpen(false);
+      }}
+    >
       <button
         type="button"
+        aria-haspopup="menu"
+        aria-expanded={isOpen}
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-2 text-xs font-mono text-muted-foreground hover:text-foreground transition-colors"
       >
@@ -54,10 +62,15 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 mt-2 w-40 bg-popover border border-border/30 z-50 py-1 animate-in fade-in duration-200 max-h-64 overflow-y-auto custom-scrollbar rounded-sm shadow-xl">
+        <div
+          role="menu"
+          className="absolute top-full left-0 mt-2 w-40 bg-popover border border-border/30 z-50 py-1 animate-in fade-in duration-200 max-h-64 overflow-y-auto custom-scrollbar rounded-sm shadow-xl"
+        >
           {options.map((option) => (
             <button
               key={option.value}
+              type="button"
+              role="menuitem"
               onClick={() => {
                 onChange(option.value);
                 setIsOpen(false);

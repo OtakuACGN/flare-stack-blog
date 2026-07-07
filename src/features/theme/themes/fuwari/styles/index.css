@@ -22,6 +22,10 @@
     --fuwari-primary-active: oklch(0.6 0.14 var(--fuwari-hue));
     --fuwari-page-bg: oklch(0.95 0.01 var(--fuwari-hue));
     --fuwari-card-bg: white;
+    --fuwari-text-90: rgb(0 0 0 / 0.9);
+    --fuwari-text-75: rgb(0 0 0 / 0.75);
+    --fuwari-text-50: rgb(0 0 0 / 0.5);
+    --fuwari-text-30: rgb(0 0 0 / 0.3);
     --fuwari-btn-content: oklch(0.55 0.12 var(--fuwari-hue));
     --fuwari-btn-regular-bg: oklch(0.95 0.025 var(--fuwari-hue));
     --fuwari-btn-regular-bg-hover: oklch(0.9 0.05 var(--fuwari-hue));
@@ -47,6 +51,10 @@
     --fuwari-primary-active: oklch(0.85 0.14 var(--fuwari-hue));
     --fuwari-page-bg: oklch(0.16 0.014 var(--fuwari-hue));
     --fuwari-card-bg: oklch(0.23 0.015 var(--fuwari-hue));
+    --fuwari-text-90: rgb(255 255 255 / 0.9);
+    --fuwari-text-75: rgb(255 255 255 / 0.75);
+    --fuwari-text-50: rgb(255 255 255 / 0.5);
+    --fuwari-text-30: rgb(255 255 255 / 0.3);
     --fuwari-btn-content: oklch(0.75 0.1 var(--fuwari-hue));
     --fuwari-btn-regular-bg: oklch(0.33 0.035 var(--fuwari-hue));
     --fuwari-btn-regular-bg-hover: oklch(0.38 0.04 var(--fuwari-hue));
@@ -120,31 +128,19 @@
   }
 
   .fuwari-text-90 {
-    color: rgb(0 0 0 / 0.9);
-  }
-  .dark .fuwari-text-90 {
-    color: rgb(255 255 255 / 0.9);
+    color: var(--fuwari-text-90);
   }
 
   .fuwari-text-75 {
-    color: rgb(0 0 0 / 0.75);
-  }
-  .dark .fuwari-text-75 {
-    color: rgb(255 255 255 / 0.75);
+    color: var(--fuwari-text-75);
   }
 
   .fuwari-text-50 {
-    color: rgb(0 0 0 / 0.5);
-  }
-  .dark .fuwari-text-50 {
-    color: rgb(255 255 255 / 0.5);
+    color: var(--fuwari-text-50);
   }
 
   .fuwari-text-30 {
-    color: rgb(0 0 0 / 0.3);
-  }
-  .dark .fuwari-text-30 {
-    color: rgb(255 255 255 / 0.3);
+    color: var(--fuwari-text-30);
   }
 
   .fuwari-meta-icon {
@@ -196,7 +192,9 @@
     left: calc(50% - 1px);
     border-left: 2px dashed rgba(0, 0, 0, 0.1);
     pointer-events: none;
-    transition: all 0.3s;
+    transition:
+      border-color 0.3s,
+      transform 0.3s;
     transform: translateY(-50%);
   }
   .dark .fuwari-timeline-dash::before {
@@ -286,7 +284,9 @@
   background-clip: padding-box;
   border: 2px solid transparent;
   border-radius: 9999px;
-  transition: all 0.2s;
+  transition:
+    background-color 0.2s,
+    border-width 0.2s;
 }
 
 ::-webkit-scrollbar-thumb:hover {

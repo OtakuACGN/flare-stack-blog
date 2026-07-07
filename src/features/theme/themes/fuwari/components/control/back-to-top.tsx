@@ -34,6 +34,7 @@ export function BackToTop() {
         )}
       >
         <button
+          type="button"
           onClick={scrollToTop}
           aria-label={m.post_back_to_top()}
           className="flex items-center justify-center w-15 h-15 fuwari-card-base hover:bg-(--fuwari-btn-plain-bg-hover) active:bg-(--fuwari-btn-plain-bg-active) text-(--fuwari-primary) text-2xl font-bold transition-all active:scale-90 shadow-md"

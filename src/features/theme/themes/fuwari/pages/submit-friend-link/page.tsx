@@ -7,6 +7,7 @@ import {
   PlusCircle,
   XCircle,
 } from "lucide-react";
+import { useId } from "react";
 import { Turnstile } from "@/components/common/turnstile";
 import type {
   MyFriendLink,
@@ -45,6 +46,12 @@ export function SubmitFriendLinkPage({
   myLinks,
   form,
 }: SubmitFriendLinkPageProps) {
+  const siteNameId = useId();
+  const siteUrlId = useId();
+  const descriptionId = useId();
+  const logoUrlId = useId();
+  const contactEmailId = useId();
+
   return (
     <div className="flex flex-col gap-4 w-full">
       {/* Header */}
@@ -81,15 +88,15 @@ export function SubmitFriendLinkPage({
           <form onSubmit={form.handleSubmit} className="space-y-5">
             <div>
               <label
-                htmlFor="siteName"
+                htmlFor={siteNameId}
                 className="block text-sm font-medium fuwari-text-75 mb-1.5 transition-colors"
               >
                 {m.friend_link_field_site_name()}{" "}
                 <span className="text-red-500">*</span>
               </label>
               <input
-                id="siteName"
                 {...form.register("siteName")}
+                id={siteNameId}
                 className="w-full px-4 py-2.5 rounded-xl border border-(--fuwari-input-border) bg-(--fuwari-input-bg) focus:outline-none focus:ring-2 focus:ring-(--fuwari-primary)/50 focus:border-transparent transition-all"
                 placeholder={m.friend_link_placeholder_site_name_fuwari()}
               />
@@ -101,12 +108,16 @@ export function SubmitFriendLinkPage({
             </div>
 
             <div>
-              <label className="block text-sm font-medium fuwari-text-75 mb-1.5 transition-colors">
+              <label
+                htmlFor={siteUrlId}
+                className="block text-sm font-medium fuwari-text-75 mb-1.5 transition-colors"
+              >
                 {m.friend_link_field_site_url_fuwari()}{" "}
                 <span className="text-red-500">*</span>
               </label>
               <input
                 {...form.register("siteUrl")}
+                id={siteUrlId}
                 type="url"
                 className="w-full px-4 py-2.5 rounded-xl border border-(--fuwari-input-border) bg-(--fuwari-input-bg) focus:outline-none focus:ring-2 focus:ring-(--fuwari-primary)/50 focus:border-transparent transition-all"
                 placeholder={m.friend_link_placeholder_site_url_fuwari()}
@@ -119,11 +130,15 @@ export function SubmitFriendLinkPage({
             </div>
 
             <div>
-              <label className="block text-sm font-medium fuwari-text-75 mb-1.5 transition-colors">
+              <label
+                htmlFor={descriptionId}
+                className="block text-sm font-medium fuwari-text-75 mb-1.5 transition-colors"
+              >
                 {m.friend_link_field_description()}
               </label>
               <input
                 {...form.register("description")}
+                id={descriptionId}
                 className="w-full px-4 py-2.5 rounded-xl border border-(--fuwari-input-border) bg-(--fuwari-input-bg) focus:outline-none focus:ring-2 focus:ring-(--fuwari-primary)/50 focus:border-transparent transition-all"
                 placeholder={m.friend_link_placeholder_description_fuwari()}
               />
@@ -135,11 +150,15 @@ export function SubmitFriendLinkPage({
             </div>
 
             <div>
-              <label className="block text-sm font-medium fuwari-text-75 mb-1.5 transition-colors">
+              <label
+                htmlFor={logoUrlId}
+                className="block text-sm font-medium fuwari-text-75 mb-1.5 transition-colors"
+              >
                 {m.friend_link_field_logo_url()}
               </label>
               <input
                 {...form.register("logoUrl")}
+                id={logoUrlId}
                 type="url"
                 className="w-full px-4 py-2.5 rounded-xl border border-(--fuwari-input-border) bg-(--fuwari-input-bg) focus:outline-none focus:ring-2 focus:ring-(--fuwari-primary)/50 focus:border-transparent transition-all"
                 placeholder={m.friend_link_placeholder_logo_url_fuwari()}
@@ -152,12 +171,16 @@ export function SubmitFriendLinkPage({
             </div>
 
             <div>
-              <label className="block text-sm font-medium fuwari-text-75 mb-1.5 transition-colors">
+              <label
+                htmlFor={contactEmailId}
+                className="block text-sm font-medium fuwari-text-75 mb-1.5 transition-colors"
+              >
                 {m.friend_link_field_contact_email()}{" "}
                 <span className="text-red-500">*</span>
               </label>
               <input
                 {...form.register("contactEmail")}
+                id={contactEmailId}
                 type="email"
                 className="w-full px-4 py-2.5 rounded-xl border border-(--fuwari-input-border) bg-(--fuwari-input-bg) focus:outline-none focus:ring-2 focus:ring-(--fuwari-primary)/50 focus:border-transparent transition-all"
                 placeholder={m.friend_link_placeholder_contact_email_fuwari()}

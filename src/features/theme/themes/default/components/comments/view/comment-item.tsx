@@ -123,6 +123,7 @@ export const CommentItem = memo(
           {comment.status !== "deleted" && (
             <div className="flex items-center gap-4 pt-2">
               <Button
+                type="button"
                 variant="ghost"
                 size="sm"
                 onClick={() => {
@@ -140,6 +141,7 @@ export const CommentItem = memo(
 
               {(isAuthor || isAdmin) && (
                 <Button
+                  type="button"
                   variant="ghost"
                   size="sm"
                   onClick={() => onDelete?.(comment.id)}

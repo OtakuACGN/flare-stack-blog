@@ -108,7 +108,10 @@ export function SideBar({
   return (
     <>
       {isMobileSidebarOpen && (
-        <div
+        <button
+          type="button"
+          tabIndex={-1}
+          aria-label={m.admin_sidebar_close_navigation()}
           className="fixed inset-0 bg-background/80 z-60 lg:hidden backdrop-blur-sm animate-in fade-in duration-500"
           onClick={closeMobileSidebar}
         />
@@ -131,6 +134,7 @@ export function SideBar({
             </span>
           </Link>
           <button
+            type="button"
             onClick={closeMobileSidebar}
             className="lg:hidden p-2 text-muted-foreground hover:text-foreground"
             aria-label={m.admin_sidebar_close_navigation()}
@@ -207,6 +211,7 @@ export function SideBar({
             </div>
 
             <button
+              type="button"
               onClick={handleSignOutClick}
               className="w-8 h-8 flex items-center justify-center text-muted-foreground hover:text-destructive transition-colors border border-transparent hover:border-destructive/30"
               title={m.admin_sidebar_logout()}

@@ -173,6 +173,7 @@ export function PostManager({
                 <div className="text-center font-mono text-xs">
                   {m.admin_posts_no_match()}
                   <button
+                    type="button"
                     className="mt-4 block mx-auto text-[10px] uppercase tracking-widest font-bold hover:underline"
                     onClick={onResetFilters}
                   >

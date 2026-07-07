@@ -1,8 +1,9 @@
 import { ClientOnly } from "@tanstack/react-router";
 import { X } from "lucide-react";
 import type React from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { useDialogFocus } from "@/hooks/use-dialog-focus";
 import { useDelayUnmount } from "@/hooks/use-delay-unmount";
 import { m } from "@/paraglide/messages";
 
@@ -25,6 +26,15 @@ const InsertModalInternal: React.FC<InsertModalProps> = ({
   const shouldRender = useDelayUnmount(isMounted, 500);
   const [activeType, setActiveType] = useState<ModalType>(type);
   const [inputUrl, setInputUrl] = useState(initialUrl);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const titleId = useId();
+  const inputId = useId();
+  const { handleDialogKeyDown } = useDialogFocus({
+    isOpen: isMounted,
+    dialogRef,
+    initialFocusRef: inputRef,
+  });
 
   useEffect(() => {
     if (type) {
@@ -55,13 +65,22 @@ const InsertModalInternal: React.FC<InsertModalProps> = ({
       }`}
     >
       {/* Backdrop */}
-      <div
+      <button
+        type="button"
+        tabIndex={-1}
+        aria-label={m.common_close()}
         className="absolute inset-0 bg-background/90 backdrop-blur-md transition-opacity duration-500"
         onClick={onClose}
       />
 
       {/* Modal Content */}
       <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+        onKeyDown={handleDialogKeyDown}
         className={`
             relative w-full max-w-lg bg-background border border-border/20 shadow-2xl
             flex flex-col overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] transform
@@ -74,7 +93,10 @@ const InsertModalInternal: React.FC<InsertModalProps> = ({
       >
         <div className="flex justify-between items-center px-8 py-6 border-b border-border/10">
           <div className="flex items-center gap-3">
-            <span className="text-xs font-mono text-foreground tracking-widest uppercase">
+            <span
+              id={titleId}
+              className="text-xs font-mono text-foreground tracking-widest uppercase"
+            >
               {activeType === "LINK"
                 ? m.comments_editor_modal_link_title()
                 : m.comments_editor_modal_image_title()}
@@ -83,6 +105,7 @@ const InsertModalInternal: React.FC<InsertModalProps> = ({
           <button
             type="button"
             onClick={onClose}
+            aria-label={m.common_close()}
             className="text-muted-foreground hover:text-foreground transition-colors"
           >
             <X size={18} strokeWidth={1.5} />
@@ -92,12 +115,17 @@ const InsertModalInternal: React.FC<InsertModalProps> = ({
         <div className="p-8 space-y-8">
           {/* URL Input */}
           <div className="space-y-3 group">
-            <label className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest group-focus-within:text-foreground transition-colors">
+            <label
+              htmlFor={inputId}
+              className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest group-focus-within:text-foreground transition-colors"
+            >
               {activeType === "IMAGE"
                 ? m.comments_editor_modal_image_label()
                 : m.comments_editor_modal_link_label()}
             </label>
             <input
+              ref={inputRef}
+              id={inputId}
               type="url"
               autoFocus={activeType === "LINK"}
               value={inputUrl}

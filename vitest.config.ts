@@ -54,6 +54,8 @@ export default defineConfig(async () => {
       testTimeout: 50_000,
       hookTimeout: 50_000,
       teardownTimeout: 50_000,
+      fileParallelism: false,
+      maxWorkers: 1,
       restoreMocks: true,
     },
   };

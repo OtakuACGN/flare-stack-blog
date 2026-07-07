@@ -79,9 +79,11 @@ export function CodeBlockView({
           </div>
 
           <button
+            type="button"
+            aria-label={m.common_copy_code()}
             onClick={handleCopy}
             contentEditable={false}
-            className="flex items-center gap-2 text-xs font-mono text-muted-foreground hover:text-foreground transition-all duration-300"
+            className="group/btn flex items-center gap-2 text-xs font-mono text-muted-foreground hover:text-foreground transition-colors duration-300"
           >
             {copied ? (
               <span className="animate-in fade-in slide-in-from-right-1 opacity-70">

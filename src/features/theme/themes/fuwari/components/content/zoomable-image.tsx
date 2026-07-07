@@ -1,7 +1,9 @@
 import { ClientOnly } from "@tanstack/react-router";
+import { X } from "lucide-react";
 import type React from "react";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { useDialogFocus } from "@/hooks/use-dialog-focus";
 import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 
@@ -29,10 +31,17 @@ function Lightbox({
   onClose: () => void;
   thumbRect: DOMRect | null;
 }) {
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
   const [isClosing, setIsClosing] = useState(false);
   const [isRendered, setIsRendered] = useState(false);
   const [isOpening, setIsOpening] = useState(false);
+  const { handleDialogKeyDown } = useDialogFocus({
+    isOpen: isRendered && !isClosing,
+    dialogRef,
+    initialFocusRef: closeButtonRef,
+  });
 
   // Sync isRendered with isOpen to handle mounting/unmounting
   useEffect(() => {
@@ -114,15 +123,28 @@ function Lightbox({
 
   if (!isRendered) return null;
 
+  const dialogLabel = alt
+    ? `${m.common_image_preview()}: ${alt}`
+    : m.common_image_preview();
+
   return createPortal(
     <div
+      ref={dialogRef}
+      role="dialog"
+      aria-modal="true"
+      aria-label={dialogLabel}
+      tabIndex={-1}
+      onKeyDown={handleDialogKeyDown}
       className={cn(
         "fixed inset-0 z-200 flex items-center justify-center transition-opacity duration-500 ease-out pointer-events-auto",
         isOpening || isClosing ? "opacity-0" : "opacity-100",
       )}
     >
       {/* Dark Backdrop */}
-      <div
+      <button
+        type="button"
+        tabIndex={-1}
+        aria-label={m.common_close()}
         className="absolute inset-0 bg-black/90 cursor-zoom-out"
         onClick={onClose}
       />
@@ -136,35 +158,38 @@ function Lightbox({
       >
         {/* Close Button */}
         <button
+          ref={closeButtonRef}
+          type="button"
           onClick={onClose}
           className="p-2 bg-white/5 hover:bg-white/10 rounded-lg transition-colors group"
           title={m.common_close()}
+          aria-label={m.common_close()}
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            height="24px"
-            viewBox="0 -960 960 960"
-            width="24px"
-            className="fill-white/70 group-hover:fill-white"
-          >
-            <path d="M480-424 284-228q-11 11-28 11t-28-11q-11-11-11-28t11-28l196-196-196-196q-11-11-11-28t11-28q11-11 28-11t28 11l196 196 196-196q11-11 28-11t28 11q11 11 11 28t-11 28L536-480l196 196q11 11 11 28t-11 28q-11 11-28 11t-28-11L480-424Z" />
-          </svg>
+          <X
+            className="h-6 w-6 text-white/70 transition-colors group-hover:text-white"
+            strokeWidth={1.5}
+            aria-hidden="true"
+          />
         </button>
       </div>
 
       {/* Image Container */}
-      <div
-        className="relative z-205 flex items-center justify-center max-w-[90vw] max-h-[90vh] cursor-zoom-out"
+      <button
+        type="button"
+        tabIndex={-1}
+        aria-label={m.common_close()}
+        className="relative z-205 flex items-center justify-center max-w-[90vw] max-h-[90vh] cursor-zoom-out appearance-none border-0 bg-transparent p-0"
         onClick={onClose}
       >
         <img
           ref={imgRef}
           src={src}
           alt={alt}
+          decoding="async"
           className="block max-w-full max-h-full object-contain"
           style={{ transformOrigin: "center center" }}
         />
-      </div>
+      </button>
     </div>,
     document.body,
   );
@@ -183,6 +208,9 @@ export default function ZoomableImage({
   const imgRef = useRef<HTMLImageElement>(null);
 
   const isPortrait = !!(width && height && height > width);
+  const viewFullImageLabel = alt
+    ? `${m.common_view_full_image()}: ${alt}`
+    : m.common_view_full_image();
 
   if (!src) return null;
 
@@ -195,8 +223,10 @@ export default function ZoomableImage({
 
   return (
     <>
-      <div
-        className={`cursor-zoom-in group select-none overflow-hidden m-0 p-0 rounded-xl ${
+      <button
+        type="button"
+        aria-label={viewFullImageLabel}
+        className={`cursor-zoom-in group select-none overflow-hidden m-0 p-0 rounded-xl appearance-none border-0 bg-transparent text-left ${
           isPortrait
             ? "flex items-center justify-center w-full max-h-[70vh]"
             : "w-full h-auto"
@@ -210,6 +240,7 @@ export default function ZoomableImage({
           width={width}
           height={height}
           loading="lazy"
+          decoding="async"
           className={cn(
             className,
             "transition-all duration-500 will-change-transform m-0 p-0",
@@ -219,7 +250,7 @@ export default function ZoomableImage({
           )}
           {...props}
         />
-      </div>
+      </button>
 
       <ClientOnly>
         <Lightbox

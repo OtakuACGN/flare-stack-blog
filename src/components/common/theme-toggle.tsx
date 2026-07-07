@@ -71,6 +71,7 @@ export function ThemeToggle({ className }: { className?: string }) {
 
   return (
     <button
+      type="button"
       ref={ref}
       onClick={toggleTheme}
       className={cn(

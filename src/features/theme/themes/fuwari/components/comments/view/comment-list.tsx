@@ -173,6 +173,7 @@ function RootCommentWithReplies({
       {root.replyCount > 0 && (
         <div className="ml-12 mt-1">
           <button
+            type="button"
             onClick={onToggleExpand}
             className="flex items-center gap-3 group py-1"
           >
@@ -240,6 +241,7 @@ function RootCommentWithReplies({
 
               {hasNextPage && (
                 <button
+                  type="button"
                   onClick={() => fetchNextPage()}
                   disabled={isFetchingNextPage}
                   className="text-xs fuwari-text-50 hover:text-(--fuwari-primary) transition-colors font-medium py-2 disabled:opacity-50"
@@ -303,13 +305,15 @@ function LoginToReplyPrompt({
       <span className="text-sm fuwari-text-50 flex-1">
         {m.comments_list_login_to_reply({ userName: userName })}
       </span>
-      <Link to="/login">
-        <button className="fuwari-btn-primary h-8 px-4 text-sm rounded-lg">
-          {m.comments_login()}
-        </button>
+      <Link
+        to="/login"
+        className="fuwari-btn-primary h-8 px-4 text-sm rounded-lg inline-flex items-center justify-center"
+      >
+        {m.comments_login()}
       </Link>
       {onCancel && (
         <button
+          type="button"
           onClick={onCancel}
           className="text-sm fuwari-text-50 hover:fuwari-text-75 transition-colors"
         >

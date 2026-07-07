@@ -60,6 +60,7 @@ export function PostsPage({
 
         <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
           <button
+            type="button"
             onClick={() => onTagClick("")}
             className={cn(
               "text-sm font-mono transition-all duration-300 relative group",
@@ -79,6 +80,7 @@ export function PostsPage({
 
           {visibleTags.map((tag) => (
             <button
+              type="button"
               key={tag.id}
               onClick={() => onTagClick(tag.name)}
               className={cn(
@@ -105,6 +107,7 @@ export function PostsPage({
 
           {hasMoreTags && (
             <button
+              type="button"
               onClick={() => setIsExpanded(!isExpanded)}
               className="text-xs font-mono text-muted-foreground/50 hover:text-foreground transition-colors ml-2"
             >

@@ -2,7 +2,7 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import type { JSONContent } from "@tiptap/react";
 import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import type { RootCommentWithReplyCount } from "@/features/comments/comments.schema";
 import { repliesByRootIdInfiniteQuery } from "@/features/comments/queries";
 import { authClient } from "@/lib/auth/auth.client";
@@ -173,16 +173,19 @@ function RootCommentWithReplies({
                   userName: replyTarget.userName,
                 })}
               </span>
-              <Link to="/login">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-7 px-3 text-[9px] uppercase tracking-widest font-bold border-border/40 hover:bg-foreground hover:text-background transition-all"
-                >
-                  {m.comments_login()}
-                </Button>
+              <Link
+                to="/login"
+                className={buttonVariants({
+                  variant: "outline",
+                  size: "sm",
+                  className:
+                    "h-7 px-3 text-[9px] uppercase tracking-widest font-bold border-border/40 hover:bg-foreground hover:text-background transition-all",
+                })}
+              >
+                {m.comments_login()}
               </Link>
               <button
+                type="button"
                 onClick={onCancelReply}
                 className="text-[9px] uppercase tracking-widest font-bold text-muted-foreground/50 hover:text-foreground transition-colors"
               >
@@ -196,6 +199,7 @@ function RootCommentWithReplies({
       {root.replyCount > 0 && (
         <div className="ml-12 mt-2">
           <button
+            type="button"
             onClick={onToggleExpand}
             className="flex items-center gap-3 group mt-1 mb-1"
           >
@@ -253,16 +257,19 @@ function RootCommentWithReplies({
                                 userName: replyTarget.userName,
                               })}
                             </span>
-                            <Link to="/login">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="h-7 px-3 text-[9px] uppercase tracking-widest font-bold border-border/40 hover:bg-foreground hover:text-background transition-all"
-                              >
-                                {m.comments_login()}
-                              </Button>
+                            <Link
+                              to="/login"
+                              className={buttonVariants({
+                                variant: "outline",
+                                size: "sm",
+                                className:
+                                  "h-7 px-3 text-[9px] uppercase tracking-widest font-bold border-border/40 hover:bg-foreground hover:text-background transition-all",
+                              })}
+                            >
+                              {m.comments_login()}
                             </Link>
                             <button
+                              type="button"
                               onClick={onCancelReply}
                               className="text-[9px] uppercase tracking-widest font-bold text-muted-foreground/50 hover:text-foreground transition-colors"
                             >
@@ -278,6 +285,7 @@ function RootCommentWithReplies({
 
               {hasNextPage && (
                 <Button
+                  type="button"
                   variant="ghost"
                   size="sm"
                   onClick={() => fetchNextPage()}

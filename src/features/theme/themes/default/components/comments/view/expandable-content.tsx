@@ -49,6 +49,7 @@ export function ExpandableContent({
 
       {showButton && (
         <button
+          type="button"
           onClick={() => setExpanded(!expanded)}
           className="mt-1 text-xs text-muted-foreground hover:text-primary font-medium hover:underline flex items-center gap-1"
         >

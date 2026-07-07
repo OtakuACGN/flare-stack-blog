@@ -22,6 +22,7 @@ export function ErrorPage({ error: _error }: { error?: Error }) {
         </div>
 
         <button
+          type="button"
           onClick={onReset}
           className="text-[10px] font-mono uppercase tracking-[0.3em] text-muted-foreground hover:text-foreground transition-colors duration-300 gap-2 flex"
         >

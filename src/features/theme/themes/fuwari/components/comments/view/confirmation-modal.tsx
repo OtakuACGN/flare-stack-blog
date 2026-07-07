@@ -1,7 +1,9 @@
 import { ClientOnly } from "@tanstack/react-router";
 import { Loader2, X } from "lucide-react";
 import type React from "react";
+import { useId, useRef } from "react";
 import { createPortal } from "react-dom";
+import { useDialogFocus } from "@/hooks/use-dialog-focus";
 import { m } from "@/paraglide/messages";
 
 interface ConfirmationModalProps {
@@ -25,6 +27,16 @@ const ConfirmationModalInternal: React.FC<ConfirmationModalProps> = ({
   isDanger = false,
   isLoading = false,
 }) => {
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const titleId = useId();
+  const messageId = useId();
+  const { handleDialogKeyDown } = useDialogFocus({
+    isOpen,
+    dialogRef,
+    initialFocusRef: closeButtonRef,
+  });
+
   return createPortal(
     <div
       className={`fixed inset-0 z-100 flex items-center justify-center p-4 md:p-6 transition-all duration-300 ${
@@ -34,13 +46,24 @@ const ConfirmationModalInternal: React.FC<ConfirmationModalProps> = ({
       }`}
     >
       {/* Backdrop */}
-      <div
+      <button
+        type="button"
+        tabIndex={-1}
+        aria-label={m.common_close()}
+        disabled={isLoading}
         className="absolute inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-sm"
         onClick={isLoading ? undefined : () => onClose()}
       />
 
       {/* Modal Content */}
       <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        aria-describedby={messageId}
+        tabIndex={-1}
+        onKeyDown={handleDialogKeyDown}
         className={`
           relative w-full max-w-md fuwari-card-base p-0
           flex flex-col transform transition-all duration-300
@@ -49,10 +72,15 @@ const ConfirmationModalInternal: React.FC<ConfirmationModalProps> = ({
       >
         {/* Header */}
         <div className="px-6 pt-6 pb-4 flex items-start justify-between">
-          <h2 className="text-lg font-bold fuwari-text-90">{title}</h2>
+          <h2 id={titleId} className="text-lg font-bold fuwari-text-90">
+            {title}
+          </h2>
           <button
+            ref={closeButtonRef}
+            type="button"
             onClick={() => onClose()}
             disabled={isLoading}
+            aria-label={m.common_close()}
             className="p-1 -mr-1 fuwari-text-30 hover:fuwari-text-75 transition-colors disabled:opacity-50"
           >
             <X size={18} strokeWidth={1.5} />
@@ -61,7 +89,9 @@ const ConfirmationModalInternal: React.FC<ConfirmationModalProps> = ({
 
         {/* Body */}
         <div className="px-6 pb-4">
-          <p className="text-sm fuwari-text-50 leading-relaxed">{message}</p>
+          <p id={messageId} className="text-sm fuwari-text-50 leading-relaxed">
+            {message}
+          </p>
 
           {isDanger && (
             <div className="mt-4 p-3 rounded-lg bg-red-500/10 text-xs text-red-500 dark:text-red-400">
@@ -73,6 +103,7 @@ const ConfirmationModalInternal: React.FC<ConfirmationModalProps> = ({
         {/* Footer */}
         <div className="px-6 pb-6 flex justify-end gap-3">
           <button
+            type="button"
             onClick={() => onClose()}
             disabled={isLoading}
             className="h-9 px-4 text-sm fuwari-text-50 hover:fuwari-text-75 transition-colors disabled:opacity-50 rounded-lg"
@@ -80,6 +111,7 @@ const ConfirmationModalInternal: React.FC<ConfirmationModalProps> = ({
             {m.common_cancel()}
           </button>
           <button
+            type="button"
             onClick={() => onConfirm()}
             disabled={isLoading}
             className={`

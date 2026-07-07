@@ -69,6 +69,7 @@ export const CommentModerationActions = ({
           <div className="space-y-0.5">
             {status !== "published" && (
               <button
+                type="button"
                 onClick={() => handleStatusChange("published")}
                 className="w-full flex items-center justify-between px-3 py-2 text-[10px] font-mono text-left hover:bg-muted/10 transition-colors text-foreground group"
               >
@@ -79,6 +80,7 @@ export const CommentModerationActions = ({
 
             {status !== "pending" && (
               <button
+                type="button"
                 onClick={() => handleStatusChange("pending")}
                 className="w-full flex items-center justify-between px-3 py-2 text-[10px] font-mono text-left hover:bg-muted/10 transition-colors text-foreground group"
               >
@@ -89,6 +91,7 @@ export const CommentModerationActions = ({
 
             {status !== "deleted" && (
               <button
+                type="button"
                 onClick={() => handleStatusChange("deleted")}
                 className="w-full flex items-center justify-between px-3 py-2 text-[10px] font-mono text-left hover:bg-muted/10 transition-colors text-muted-foreground hover:text-red-500 group"
               >
@@ -101,6 +104,7 @@ export const CommentModerationActions = ({
           <div className="h-px bg-border/30 my-1" />
 
           <button
+            type="button"
             onClick={() => {
               setIsOpen(false);
               setShowDeleteConfirm(true);

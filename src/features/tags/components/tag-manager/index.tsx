@@ -302,6 +302,7 @@ export function TagManager() {
               <tr className="border-b border-border/30 bg-muted/5">
                 <th className="px-6 py-3 font-mono text-[9px] uppercase tracking-[0.2em] text-muted-foreground font-normal">
                   <button
+                    type="button"
                     onClick={() => toggleSort("name")}
                     className="flex items-center gap-2 hover:text-foreground transition-colors"
                   >
@@ -314,6 +315,7 @@ export function TagManager() {
                 </th>
                 <th className="px-6 py-3 font-mono text-[9px] uppercase tracking-[0.2em] text-muted-foreground font-normal">
                   <button
+                    type="button"
                     onClick={() => toggleSort("postCount")}
                     className="flex items-center gap-2 hover:text-foreground transition-colors"
                   >
@@ -328,6 +330,7 @@ export function TagManager() {
                 </th>
                 <th className="px-6 py-3 font-mono text-[9px] uppercase tracking-[0.2em] text-muted-foreground font-normal hidden lg:table-cell">
                   <button
+                    type="button"
                     onClick={() => toggleSort("createdAt")}
                     className="flex items-center gap-2 hover:text-foreground transition-colors"
                   >

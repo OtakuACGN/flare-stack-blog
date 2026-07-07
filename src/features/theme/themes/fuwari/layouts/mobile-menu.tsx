@@ -1,6 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import { LogOut, Settings, User as UserIcon } from "lucide-react";
+import { useEffect, useRef } from "react";
 import type { NavOption, UserInfo } from "@/features/theme/contract/layouts";
+import { useDialogFocus } from "@/hooks/use-dialog-focus";
 import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 
@@ -19,10 +21,32 @@ export function MobileMenu({
   user,
   logout,
 }: MobileMenuProps) {
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const { handleDialogKeyDown } = useDialogFocus({ isOpen, dialogRef });
+
+  useEffect(() => {
+    if (!isOpen) return;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isOpen) onClose();
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
+
   return (
     <>
       {/* Backdrop */}
-      <div
+      <button
+        type="button"
+        tabIndex={-1}
+        aria-label={m.common_close()}
         className={cn(
           "fixed inset-0 z-49 bg-black/20 backdrop-blur-sm transition-opacity duration-300",
           isOpen ? "opacity-100" : "opacity-0 pointer-events-none",
@@ -32,6 +56,13 @@ export function MobileMenu({
 
       {/* Floating Menu Panel */}
       <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label={m.common_open_menu()}
+        aria-hidden={!isOpen}
+        tabIndex={-1}
+        onKeyDown={handleDialogKeyDown}
         className={cn(
           "fixed top-20 right-4 z-50 w-64 origin-top-right transition-all duration-300 ease-out transform",
           isOpen
@@ -102,6 +133,7 @@ export function MobileMenu({
                   </Link>
                 </div>
                 <button
+                  type="button"
                   onClick={async () => {
                     await logout();
                     onClose();

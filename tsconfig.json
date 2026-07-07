@@ -26,9 +26,17 @@
     "noUncheckedSideEffectImports": true
   },
   "include": [
-    "**/*.ts",
-    "**/*.tsx",
-    "./worker-configuration.d.ts",
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "tests/**/*.ts",
+    "scripts/**/*.ts",
+    "vite.config.ts",
+    "vitest.config.ts",
+    "vitest.node.config.ts",
+    "drizzle.config.ts",
+    "auth-cli.ts",
+    "global.d.ts",
+    "worker-configuration.d.ts",
     ".release-it.ts"
   ]
 }

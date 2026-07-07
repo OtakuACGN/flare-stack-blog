@@ -10,7 +10,7 @@ import {
   ShieldAlert,
   X,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { AdminPagination } from "@/components/admin/admin-pagination";
@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import ConfirmationModal from "@/components/ui/confirmation-modal";
 import { Input } from "@/components/ui/input";
+import { useDialogFocus } from "@/hooks/use-dialog-focus";
 import type { FriendLinkStatus } from "@/lib/db/schema";
 import { formatDate } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
@@ -152,6 +153,7 @@ export const FriendLinkModerationTable = ({
               {m.friend_links_batch_selected({ count: selectedIds.size })}
             </span>
             <button
+              type="button"
               onClick={() => setSelectedIds(new Set())}
               className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
             >
@@ -523,6 +525,7 @@ const FriendLinkActions = ({
           <div className="space-y-0.5">
             {status !== "approved" && (
               <button
+                type="button"
                 onClick={handleApprove}
                 className="w-full flex items-center justify-between px-3 py-2 text-[10px] font-mono text-left hover:bg-muted/10 transition-colors text-foreground group"
               >
@@ -533,6 +536,7 @@ const FriendLinkActions = ({
 
             {status !== "rejected" && (
               <button
+                type="button"
                 onClick={() => {
                   setIsOpen(false);
                   setShowRejectModal(true);
@@ -545,6 +549,7 @@ const FriendLinkActions = ({
             )}
 
             <button
+              type="button"
               onClick={() => {
                 setIsOpen(false);
                 setShowEditModal(true);
@@ -559,6 +564,7 @@ const FriendLinkActions = ({
           <div className="h-px bg-border/30 my-1" />
 
           <button
+            type="button"
             onClick={() => {
               setIsOpen(false);
               setShowDeleteConfirm(true);
@@ -625,25 +631,68 @@ const RejectModal = ({
   isLoading: boolean;
 }) => {
   const [reason, setReason] = useState("");
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const titleId = useId();
+  const textareaId = useId();
+  const { handleDialogKeyDown } = useDialogFocus({
+    isOpen,
+    dialogRef,
+    initialFocusRef: textareaRef,
+  });
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div
+      <button
+        type="button"
+        aria-label={m.common_close()}
         className="fixed inset-0 bg-background/80 backdrop-blur-sm"
         onClick={onClose}
       />
-      <div className="relative bg-background border border-border/30 p-8 max-w-md w-full mx-4 animate-in fade-in zoom-in-95 duration-200">
-        <h3 className="text-lg font-serif font-medium mb-6">
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+        onKeyDown={(event) => {
+          if (event.key === "Escape") {
+            event.stopPropagation();
+            onClose();
+            return;
+          }
+
+          handleDialogKeyDown(event);
+        }}
+        className="relative bg-background border border-border/30 p-8 max-w-md w-full mx-4 animate-in fade-in zoom-in-95 duration-200"
+      >
+        <h3 id={titleId} className="text-lg font-serif font-medium mb-6">
           {m.friend_links_reject_modal_title()}
         </h3>
         <div className="space-y-4">
           <div className="space-y-2">
-            <label className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">
+            <label
+              htmlFor={textareaId}
+              className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider"
+            >
               {m.friend_links_reject_modal_label()}
             </label>
             <textarea
+              id={textareaId}
+              ref={textareaRef}
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               className="w-full bg-transparent border border-border/50 px-3 py-2 text-sm font-sans focus:border-foreground focus:outline-none transition-colors resize-none"
@@ -654,6 +703,7 @@ const RejectModal = ({
           </div>
           <div className="flex justify-end gap-3 pt-4">
             <Button
+              type="button"
               variant="ghost"
               onClick={onClose}
               className="font-mono text-[10px] uppercase tracking-widest rounded-none"
@@ -661,6 +711,7 @@ const RejectModal = ({
               {m.friend_links_batch_cancel()}
             </Button>
             <Button
+              type="button"
               onClick={() => onConfirm(reason || undefined)}
               disabled={isLoading}
               className="rounded-none bg-foreground text-background hover:bg-foreground/90 font-mono text-[10px] uppercase tracking-widest"
@@ -705,6 +756,9 @@ const EditModal = ({
     contactEmail: string | null;
   };
 }) => {
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const titleId = useId();
+  const { handleDialogKeyDown } = useDialogFocus({ isOpen, dialogRef });
   const form = useForm<CreateFriendLinkInput>({
     resolver: standardSchemaResolver(createCreateFriendLinkSchema(m)),
     defaultValues: {
@@ -725,6 +779,17 @@ const EditModal = ({
 
   const [siteName, siteUrl] = watch(["siteName", "siteUrl"]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [isOpen]);
+
   const handleClose = () => {
     reset();
     onClose();
@@ -744,12 +809,30 @@ const EditModal = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div
+      <button
+        type="button"
+        aria-label={m.common_close()}
         className="fixed inset-0 bg-background/80 backdrop-blur-sm"
         onClick={handleClose}
       />
-      <div className="relative bg-background border border-border/30 p-8 max-w-md w-full mx-4 animate-in fade-in zoom-in-95 duration-200">
-        <h3 className="text-lg font-serif font-medium mb-6">
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+        onKeyDown={(event) => {
+          if (event.key === "Escape") {
+            event.stopPropagation();
+            handleClose();
+            return;
+          }
+
+          handleDialogKeyDown(event);
+        }}
+        className="relative bg-background border border-border/30 p-8 max-w-md w-full mx-4 animate-in fade-in zoom-in-95 duration-200"
+      >
+        <h3 id={titleId} className="text-lg font-serif font-medium mb-6">
           {m.friend_links_edit_modal_title()}
         </h3>
         <form onSubmit={handleSubmit(handleConfirm)} className="space-y-4">
@@ -813,15 +896,23 @@ const FormField = ({
   label: string;
   error?: string;
   inputProps: React.ComponentProps<typeof Input>;
-}) => (
-  <div className="space-y-1.5">
-    <label className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">
-      {label}
-    </label>
-    <Input
-      {...inputProps}
-      className="bg-transparent border-0 border-b border-border/50 text-sm px-0 rounded-none focus-visible:ring-0 focus-visible:border-foreground transition-all shadow-none h-auto py-1.5"
-    />
-    {error && <p className="text-xs text-red-500">! {error}</p>}
-  </div>
-);
+}) => {
+  const inputId = useId();
+
+  return (
+    <div className="space-y-1.5">
+      <label
+        htmlFor={inputId}
+        className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider"
+      >
+        {label}
+      </label>
+      <Input
+        {...inputProps}
+        id={inputId}
+        className="bg-transparent border-0 border-b border-border/50 text-sm px-0 rounded-none focus-visible:ring-0 focus-visible:border-foreground transition-all shadow-none h-auto py-1.5"
+      />
+      {error && <p className="text-xs text-red-500">! {error}</p>}
+    </div>
+  );
+};

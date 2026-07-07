@@ -1,7 +1,9 @@
 import { ClientOnly } from "@tanstack/react-router";
 import { Loader2, X } from "lucide-react";
 import type React from "react";
+import { useId, useRef } from "react";
 import { createPortal } from "react-dom";
+import { useDialogFocus } from "@/hooks/use-dialog-focus";
 import { m } from "@/paraglide/messages";
 
 interface ConfirmationModalProps {
@@ -25,6 +27,16 @@ const ConfirmationModalInternal: React.FC<ConfirmationModalProps> = ({
   isDanger = false,
   isLoading = false,
 }) => {
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const titleId = useId();
+  const messageId = useId();
+  const { handleDialogKeyDown } = useDialogFocus({
+    isOpen,
+    dialogRef,
+    initialFocusRef: closeButtonRef,
+  });
+
   return createPortal(
     <div
       className={`fixed inset-0 z-100 flex items-center justify-center p-4 md:p-6 transition-all duration-300 ${
@@ -34,13 +46,24 @@ const ConfirmationModalInternal: React.FC<ConfirmationModalProps> = ({
       }`}
     >
       {/* Backdrop */}
-      <div
+      <button
+        type="button"
+        tabIndex={-1}
+        aria-label={m.common_close()}
+        disabled={isLoading}
         className="absolute inset-0 bg-background/90 backdrop-blur-sm"
         onClick={isLoading ? undefined : () => onClose()}
       />
 
       {/* Modal Content */}
       <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        aria-describedby={messageId}
+        tabIndex={-1}
+        onKeyDown={handleDialogKeyDown}
         className={`
           relative w-full max-w-md bg-background border border-border/30
           flex flex-col transform transition-all duration-300
@@ -61,13 +84,19 @@ const ConfirmationModalInternal: React.FC<ConfirmationModalProps> = ({
                 : ` ${m.common_modal_state_confirm()} `}
               ]
             </p>
-            <h2 className="text-2xl font-serif font-medium text-foreground">
+            <h2
+              id={titleId}
+              className="text-2xl font-serif font-medium text-foreground"
+            >
               {title}
             </h2>
           </div>
           <button
+            ref={closeButtonRef}
+            type="button"
             onClick={() => onClose()}
             disabled={isLoading}
+            aria-label={m.common_close()}
             className="p-2 -mr-2 text-muted-foreground/50 hover:text-foreground transition-colors disabled:opacity-50"
           >
             <X size={16} strokeWidth={1.5} />
@@ -76,7 +105,10 @@ const ConfirmationModalInternal: React.FC<ConfirmationModalProps> = ({
 
         {/* Body */}
         <div className="px-6 pb-6">
-          <p className="text-base text-muted-foreground/80 leading-relaxed font-light">
+          <p
+            id={messageId}
+            className="text-base text-muted-foreground/80 leading-relaxed font-light"
+          >
             {message}
           </p>
 
@@ -90,6 +122,7 @@ const ConfirmationModalInternal: React.FC<ConfirmationModalProps> = ({
         {/* Footer */}
         <div className="px-6 pb-6 flex justify-end gap-3">
           <button
+            type="button"
             onClick={() => onClose()}
             disabled={isLoading}
             className="px-4 py-2.5 text-xs font-mono uppercase tracking-widest text-muted-foreground/60 hover:text-foreground transition-colors disabled:opacity-50"
@@ -97,6 +130,7 @@ const ConfirmationModalInternal: React.FC<ConfirmationModalProps> = ({
             {m.common_cancel()}
           </button>
           <button
+            type="button"
             onClick={() => onConfirm()}
             disabled={isLoading}
             className={`

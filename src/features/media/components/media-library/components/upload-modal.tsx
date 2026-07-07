@@ -1,12 +1,13 @@
 import { ClientOnly } from "@tanstack/react-router";
 import { Loader2, X } from "lucide-react";
 import type React from "react";
-import { useRef } from "react";
+import { useEffect, useId, useRef } from "react";
 import { createPortal } from "react-dom";
 import {
   ACCEPTED_IMAGE_TYPES,
   MAX_FILE_SIZE,
 } from "@/features/media/media.schema";
+import { useDialogFocus } from "@/hooks/use-dialog-focus";
 import { m } from "@/paraglide/messages";
 import type { UploadItem } from "../types";
 
@@ -32,8 +33,22 @@ function UploadModalInternal({
   onDrop,
 }: UploadModalProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const titleId = useId();
   const accept = ACCEPTED_IMAGE_TYPES.join(",");
   const maxSizeMb = Math.floor(MAX_FILE_SIZE / 1024 / 1024);
+  const { handleDialogKeyDown } = useDialogFocus({ isOpen, dialogRef });
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [isOpen]);
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
@@ -49,6 +64,7 @@ function UploadModalInternal({
 
   return createPortal(
     <div
+      aria-hidden={!isOpen}
       className={`fixed inset-0 z-100 flex items-center justify-center p-4 md:p-6 transition-all duration-300 ${
         isOpen
           ? "opacity-100 pointer-events-auto"
@@ -56,13 +72,29 @@ function UploadModalInternal({
       }`}
     >
       {/* Backdrop */}
-      <div
+      <button
+        type="button"
+        aria-label={m.common_close()}
         className="absolute inset-0 bg-background/90 backdrop-blur-sm"
         onClick={onClose}
       />
 
       {/* Modal Content */}
       <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+        onKeyDown={(event) => {
+          if (event.key === "Escape") {
+            event.stopPropagation();
+            onClose();
+            return;
+          }
+
+          handleDialogKeyDown(event);
+        }}
         className={`
           relative w-full max-w-md bg-background border border-border/30
           flex flex-col transform transition-all duration-300 max-h-[85vh]
@@ -75,11 +107,16 @@ function UploadModalInternal({
             <p className="text-xs font-mono uppercase tracking-widest text-muted-foreground/60">
               [ {m.media_upload_modal_tag()} ]
             </p>
-            <h2 className="text-2xl font-serif font-medium text-foreground">
+            <h2
+              id={titleId}
+              className="text-2xl font-serif font-medium text-foreground"
+            >
               {m.media_upload_modal_title()}
             </h2>
           </div>
           <button
+            type="button"
+            aria-label={m.common_close()}
             onClick={onClose}
             className="p-2 -mr-2 text-muted-foreground/50 hover:text-foreground transition-colors"
           >
@@ -99,13 +136,14 @@ function UploadModalInternal({
         {/* Body */}
         <div className="px-6 space-y-6 overflow-y-auto custom-scrollbar flex-1 min-h-0 pb-2">
           {/* Drop Zone */}
-          <div
+          <button
+            type="button"
             onClick={() => fileInputRef.current?.click()}
             onDragOver={onDragOver}
             onDragLeave={onDragLeave}
             onDrop={onDrop}
             className={`
-              relative border border-dashed py-8 px-6 flex flex-col items-center justify-center cursor-pointer transition-all duration-300
+              relative w-full border border-dashed py-8 px-6 flex flex-col items-center justify-center cursor-pointer transition-all duration-300
               ${
                 isDragging
                   ? "border-foreground bg-accent/20"
@@ -123,7 +161,7 @@ function UploadModalInternal({
                 {m.media_upload_support_format({ maxSizeMb })}
               </p>
             </div>
-          </div>
+          </button>
 
           {/* Queue List */}
           {queue.length > 0 && (
@@ -150,7 +188,14 @@ function UploadModalInternal({
                     </div>
 
                     {/* Progress Bar */}
-                    <div className="relative h-1 w-full bg-muted/30 overflow-hidden">
+                    <div
+                      role="progressbar"
+                      aria-label={item.name}
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                      aria-valuenow={item.progress}
+                      className="relative h-1 w-full bg-muted/30 overflow-hidden"
+                    >
                       <div
                         className={`absolute top-0 left-0 h-full transition-all duration-300 ${
                           item.status === "COMPLETE"
@@ -207,6 +252,7 @@ function UploadModalInternal({
         <div className="px-6 pb-6 pt-4 flex justify-end gap-3 shrink-0">
           {queue.length > 0 && !isAllComplete && (
             <button
+              type="button"
               onClick={onClose}
               className="px-4 py-2.5 text-xs font-mono uppercase tracking-widest text-muted-foreground/60 hover:text-foreground transition-colors"
             >
@@ -216,6 +262,7 @@ function UploadModalInternal({
 
           {isAllComplete ? (
             <button
+              type="button"
               onClick={onClose}
               className={`
                 px-6 py-2.5 text-xs font-mono uppercase tracking-widest transition-all
@@ -232,6 +279,7 @@ function UploadModalInternal({
             </button>
           ) : (
             <button
+              type="button"
               onClick={onClose}
               className="px-4 py-2.5 text-xs font-mono uppercase tracking-widest text-muted-foreground/60 hover:text-foreground transition-colors"
             >

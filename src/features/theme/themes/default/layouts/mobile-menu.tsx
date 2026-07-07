@@ -1,7 +1,9 @@
 import { Link, useRouteContext } from "@tanstack/react-router";
 import { LogOut, UserIcon, X } from "lucide-react";
+import { useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import type { NavOption, UserInfo } from "@/features/theme/contract/layouts";
+import { useDialogFocus } from "@/hooks/use-dialog-focus";
 import { m } from "@/paraglide/messages";
 
 interface MobileMenuProps {
@@ -20,9 +22,39 @@ export function MobileMenu({
   logout,
 }: MobileMenuProps) {
   const { siteConfig } = useRouteContext({ from: "__root__" });
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const { handleDialogKeyDown } = useDialogFocus({
+    isOpen,
+    dialogRef,
+    initialFocusRef: closeButtonRef,
+  });
+
+  useEffect(() => {
+    if (!isOpen) return;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isOpen) onClose();
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
 
   return (
     <div
+      ref={dialogRef}
+      role="dialog"
+      aria-modal="true"
+      aria-label={m.common_open_menu()}
+      aria-hidden={!isOpen}
+      tabIndex={-1}
+      onKeyDown={handleDialogKeyDown}
       className={`fixed inset-0 z-100 transition-all duration-500 ease-in-out ${
         isOpen
           ? "opacity-100 pointer-events-auto"
@@ -30,7 +62,10 @@ export function MobileMenu({
       }`}
     >
       {/* Backdrop */}
-      <div
+      <button
+        type="button"
+        tabIndex={-1}
+        aria-label={m.common_close()}
         className="absolute inset-0 bg-background/95 backdrop-blur-2xl"
         onClick={onClose}
       />
@@ -49,10 +84,13 @@ export function MobileMenu({
             </span>
           </div>
           <Button
+            ref={closeButtonRef}
+            type="button"
             variant="ghost"
             size="icon"
             onClick={onClose}
-            className="w-12 h-12 rounded-full text-muted-foreground hover:text-foreground hover:bg-transparent transition-all"
+            className="w-12 h-12 rounded-full text-muted-foreground hover:text-foreground hover:bg-transparent transition-colors"
+            aria-label={m.common_close()}
           >
             <X size={24} strokeWidth={1.5} />
           </Button>
@@ -164,11 +202,13 @@ export function MobileMenu({
               </div>
 
               <button
+                type="button"
                 onClick={async () => {
                   await logout();
                   onClose();
                 }}
                 className="text-muted-foreground hover:text-destructive transition-colors"
+                aria-label={m.profile_logout()}
               >
                 <LogOut size={20} strokeWidth={1.5} />
               </button>

@@ -1,4 +1,5 @@
 import { Loader2 } from "lucide-react";
+import { useId } from "react";
 import { Input } from "@/components/ui/input";
 import type { RegisterFormData } from "@/features/theme/contract/pages";
 import { m } from "@/paraglide/messages";
@@ -10,17 +11,25 @@ interface RegisterFormProps {
 export function RegisterForm({ form }: RegisterFormProps) {
   const { register, errors, handleSubmit, isSubmitting, turnstilePending } =
     form;
+  const nameId = useId();
+  const emailId = useId();
+  const passwordId = useId();
+  const confirmPasswordId = useId();
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
       <div className="space-y-6">
         <div className="space-y-2 group">
-          <label className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground/60 group-focus-within:text-foreground transition-colors">
+          <label
+            htmlFor={nameId}
+            className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground/60 group-focus-within:text-foreground transition-colors"
+          >
             {m.register_nickname()}
           </label>
           <Input
             type="text"
             {...register("name")}
+            id={nameId}
             className="w-full bg-transparent border-0 border-b border-border/40 rounded-none py-3 text-sm font-light focus-visible:ring-0 focus:border-foreground focus:outline-none transition-all placeholder:text-muted-foreground/30 shadow-none px-0"
             placeholder={m.register_nickname_placeholder()}
           />
@@ -32,12 +41,16 @@ export function RegisterForm({ form }: RegisterFormProps) {
         </div>
 
         <div className="space-y-2 group">
-          <label className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground/60 group-focus-within:text-foreground transition-colors">
+          <label
+            htmlFor={emailId}
+            className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground/60 group-focus-within:text-foreground transition-colors"
+          >
             {m.login_email_address()}
           </label>
           <Input
             type="email"
             {...register("email")}
+            id={emailId}
             className="w-full bg-transparent border-0 border-b border-border/40 rounded-none py-3 text-sm font-light focus-visible:ring-0 focus:border-foreground focus:outline-none transition-all placeholder:text-muted-foreground/30 shadow-none px-0"
             placeholder={m.login_email_placeholder()}
           />
@@ -50,12 +63,16 @@ export function RegisterForm({ form }: RegisterFormProps) {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2 group">
-            <label className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground/60 group-focus-within:text-foreground transition-colors">
+            <label
+              htmlFor={passwordId}
+              className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground/60 group-focus-within:text-foreground transition-colors"
+            >
               {m.register_password()}
             </label>
             <Input
               type="password"
               {...register("password")}
+              id={passwordId}
               className="w-full bg-transparent border-0 border-b border-border/40 rounded-none py-3 text-sm font-light focus-visible:ring-0 focus:border-foreground focus:outline-none transition-all placeholder:text-muted-foreground/30 shadow-none px-0"
               placeholder={m.login_password_placeholder()}
             />
@@ -66,12 +83,16 @@ export function RegisterForm({ form }: RegisterFormProps) {
             )}
           </div>
           <div className="space-y-2 group">
-            <label className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground/60 group-focus-within:text-foreground transition-colors">
+            <label
+              htmlFor={confirmPasswordId}
+              className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground/60 group-focus-within:text-foreground transition-colors"
+            >
               {m.register_confirm_password()}
             </label>
             <Input
               type="password"
               {...register("confirmPassword")}
+              id={confirmPasswordId}
               className="w-full bg-transparent border-0 border-b border-border/40 rounded-none py-3 text-sm font-light focus-visible:ring-0 focus:border-foreground focus:outline-none transition-all placeholder:text-muted-foreground/30 shadow-none px-0"
               placeholder={m.login_password_placeholder()}
             />

@@ -14,9 +14,11 @@ export function AuthLayout({ onBack, children }: AuthLayoutProps) {
       <div className="w-full max-w-md relative z-10 fuwari-onload-animation">
         {/* Back Button */}
         <button
+          type="button"
           onClick={onBack}
           className="group absolute -top-14 left-0 flex items-center justify-center w-10 h-10 rounded-xl bg-(--fuwari-card-bg) shadow-sm text-(--fuwari-text-50) hover:text-(--fuwari-text-90) hover:shadow-md transition-all shrink-0"
           title={m.auth_layout_back_home()}
+          aria-label={m.auth_layout_back_home()}
         >
           <ArrowLeft
             size={18}

@@ -1,4 +1,4 @@
-import type React from "react";
+import React from "react";
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
@@ -16,6 +16,13 @@ interface DropdownProps {
   items: Array<DropdownItem>;
   className?: string;
   align?: "left" | "right";
+}
+
+interface TriggerProps {
+  type?: "button" | "submit" | "reset";
+  onClick?: (event: React.MouseEvent<HTMLElement>) => void;
+  "aria-haspopup"?: "menu";
+  "aria-expanded"?: boolean;
 }
 
 const Dropdown: React.FC<DropdownProps> = ({
@@ -40,14 +47,50 @@ const Dropdown: React.FC<DropdownProps> = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const renderTrigger = () => {
+    if (!React.isValidElement<TriggerProps>(trigger)) {
+      return (
+        <button
+          type="button"
+          aria-haspopup="menu"
+          aria-expanded={isOpen}
+          onClick={() => setIsOpen((open) => !open)}
+          className="cursor-pointer"
+        >
+          {trigger}
+        </button>
+      );
+    }
+
+    const shouldPassType =
+      typeof trigger.type !== "string" || trigger.type === "button";
+
+    return React.cloneElement(trigger, {
+      ...(shouldPassType ? { type: trigger.props.type ?? "button" } : {}),
+      "aria-haspopup": "menu",
+      "aria-expanded": isOpen,
+      onClick: (event: React.MouseEvent<HTMLElement>) => {
+        trigger.props.onClick?.(event);
+        if (!event.defaultPrevented) {
+          setIsOpen((open) => !open);
+        }
+      },
+    });
+  };
+
   return (
-    <div className={cn("relative inline-block", className)} ref={dropdownRef}>
-      <div onClick={() => setIsOpen(!isOpen)} className="cursor-pointer">
-        {trigger}
-      </div>
+    <div
+      className={cn("relative inline-block", className)}
+      ref={dropdownRef}
+      onKeyDown={(event) => {
+        if (event.key === "Escape") setIsOpen(false);
+      }}
+    >
+      {renderTrigger()}
 
       {isOpen && (
         <div
+          role="menu"
           className={cn(
             "absolute top-full mt-2 w-40 bg-popover border border-border/30 z-50 py-1 animate-in fade-in duration-200",
             align === "right" ? "right-0" : "left-0",
@@ -56,6 +99,8 @@ const Dropdown: React.FC<DropdownProps> = ({
           {items.map((item, index) => (
             <button
               key={index}
+              type="button"
+              role="menuitem"
               onClick={() => {
                 item.onClick();
                 setIsOpen(false);

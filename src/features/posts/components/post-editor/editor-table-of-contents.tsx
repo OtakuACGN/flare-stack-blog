@@ -59,6 +59,7 @@ export function EditorTableOfContents({ editor }: { editor: Editor }) {
           {items.map((node) => (
             <li key={node.id}>
               <button
+                type="button"
                 onClick={(e) => {
                   e.preventDefault();
                   handleItemClick(node.id);

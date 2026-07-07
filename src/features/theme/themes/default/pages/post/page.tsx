@@ -21,7 +21,7 @@ export function PostPage({ post }: PostPageProps) {
     const handleScroll = () => {
       setShowBackToTop(window.scrollY > 400);
     };
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -30,6 +30,7 @@ export function PostPage({ post }: PostPageProps) {
       {/* Back Link */}
       <nav className="py-12 flex items-center justify-between">
         <button
+          type="button"
           onClick={() => navigate({ to: "/posts" })}
           className="flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] opacity-40 hover:opacity-100 transition-opacity"
         >
@@ -177,6 +178,7 @@ export function PostPage({ post }: PostPageProps) {
         }`}
       >
         <button
+          type="button"
           onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
           className="group flex flex-col items-center gap-1.5"
         >

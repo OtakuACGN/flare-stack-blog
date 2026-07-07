@@ -11,6 +11,7 @@ export function LanguageSwitcher({ className = "" }: { className?: string }) {
 
   const handleLanguageChange = (locale: "zh" | "en") => {
     setLocale(locale);
+    setIsOpen(false);
   };
 
   useEffect(() => {
@@ -26,6 +27,17 @@ export function LanguageSwitcher({ className = "" }: { className?: string }) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
   return (
     <div
       className={`relative flex items-center justify-center ${className}`}
@@ -36,6 +48,8 @@ export function LanguageSwitcher({ className = "" }: { className?: string }) {
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center justify-center w-full h-full text-black/50 hover:text-black/80 dark:text-white/50 dark:hover:text-white/80 transition-colors group"
         aria-label={m.common_switch_language()}
+        aria-haspopup="menu"
+        aria-expanded={isOpen}
       >
         <Languages
           size={18}
@@ -49,9 +63,14 @@ export function LanguageSwitcher({ className = "" }: { className?: string }) {
       </button>
 
       {isOpen && (
-        <div className="absolute top-full right-0 mt-2 w-32 bg-white dark:bg-zinc-900 border border-black/10 dark:border-white/10 z-50 py-1 animate-in fade-in zoom-in-95 duration-200 rounded-xl shadow-lg overflow-hidden">
+        <div
+          role="menu"
+          className="absolute top-full right-0 mt-2 w-32 bg-white dark:bg-zinc-900 border border-black/10 dark:border-white/10 z-50 py-1 animate-in fade-in zoom-in-95 duration-200 rounded-xl shadow-lg overflow-hidden"
+        >
           <button
+            type="button"
             onClick={() => handleLanguageChange("zh")}
+            role="menuitem"
             className={`w-full text-left px-4 py-2 text-sm transition-colors ${
               currentLocale === "zh"
                 ? "text-(--fuwari-primary) bg-black/5 dark:bg-white/5 font-bold"
@@ -61,7 +80,9 @@ export function LanguageSwitcher({ className = "" }: { className?: string }) {
             中文
           </button>
           <button
+            type="button"
             onClick={() => handleLanguageChange("en")}
+            role="menuitem"
             className={`w-full text-left px-4 py-2 text-sm transition-colors ${
               currentLocale === "en"
                 ? "text-(--fuwari-primary) bg-black/5 dark:bg-white/5 font-bold"

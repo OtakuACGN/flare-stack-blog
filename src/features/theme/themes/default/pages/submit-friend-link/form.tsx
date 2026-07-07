@@ -1,4 +1,5 @@
 import { Loader2 } from "lucide-react";
+import { useId } from "react";
 import { Turnstile } from "@/components/common/turnstile";
 import { Input } from "@/components/ui/input";
 import type { FriendLinkSubmitFormData } from "@/features/theme/contract/pages";
@@ -10,6 +11,11 @@ interface FriendLinkSubmitFormProps {
 
 export function FriendLinkSubmitForm({ form }: FriendLinkSubmitFormProps) {
   const { register, errors, handleSubmit, isSubmitting, turnstileProps } = form;
+  const siteNameId = useId();
+  const siteUrlId = useId();
+  const descriptionId = useId();
+  const logoUrlId = useId();
+  const contactEmailId = useId();
 
   const inputClassName =
     "bg-transparent border-0 border-b border-border text-foreground font-serif text-lg px-0 rounded-none focus-visible:ring-0 focus-visible:border-foreground transition-all placeholder:text-muted-foreground/30 shadow-none h-auto py-2";
@@ -21,11 +27,15 @@ export function FriendLinkSubmitForm({ form }: FriendLinkSubmitFormProps) {
       <Turnstile {...turnstileProps} />
       <div className="space-y-6">
         <div className="space-y-2 group">
-          <label className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider group-focus-within:text-foreground transition-colors">
+          <label
+            htmlFor={siteNameId}
+            className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider group-focus-within:text-foreground transition-colors"
+          >
             {m.friend_link_field_site_name()} *
           </label>
           <Input
             {...register("siteName")}
+            id={siteNameId}
             className={inputClassName}
             placeholder={m.friend_link_placeholder_site_name_default()}
           />
@@ -37,11 +47,15 @@ export function FriendLinkSubmitForm({ form }: FriendLinkSubmitFormProps) {
         </div>
 
         <div className="space-y-2 group">
-          <label className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider group-focus-within:text-foreground transition-colors">
+          <label
+            htmlFor={siteUrlId}
+            className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider group-focus-within:text-foreground transition-colors"
+          >
             {m.friend_link_field_site_url()} *
           </label>
           <Input
             {...register("siteUrl")}
+            id={siteUrlId}
             className={monoInputClassName}
             placeholder={m.friend_link_placeholder_site_url()}
           />
@@ -53,11 +67,15 @@ export function FriendLinkSubmitForm({ form }: FriendLinkSubmitFormProps) {
         </div>
 
         <div className="space-y-2 group">
-          <label className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider group-focus-within:text-foreground transition-colors">
+          <label
+            htmlFor={descriptionId}
+            className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider group-focus-within:text-foreground transition-colors"
+          >
             {m.friend_link_field_description_default()}
           </label>
           <Input
             {...register("description")}
+            id={descriptionId}
             className={inputClassName}
             placeholder={m.friend_link_placeholder_description_default()}
           />
@@ -69,11 +87,15 @@ export function FriendLinkSubmitForm({ form }: FriendLinkSubmitFormProps) {
         </div>
 
         <div className="space-y-2 group">
-          <label className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider group-focus-within:text-foreground transition-colors">
+          <label
+            htmlFor={logoUrlId}
+            className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider group-focus-within:text-foreground transition-colors"
+          >
             {m.friend_link_field_logo_url_default()}
           </label>
           <Input
             {...register("logoUrl")}
+            id={logoUrlId}
             className={monoInputClassName}
             placeholder={m.friend_link_placeholder_site_url()}
           />
@@ -85,11 +107,15 @@ export function FriendLinkSubmitForm({ form }: FriendLinkSubmitFormProps) {
         </div>
 
         <div className="space-y-2 group">
-          <label className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider group-focus-within:text-foreground transition-colors">
+          <label
+            htmlFor={contactEmailId}
+            className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider group-focus-within:text-foreground transition-colors"
+          >
             {m.friend_link_field_contact_email()} *
           </label>
           <Input
             {...register("contactEmail")}
+            id={contactEmailId}
             className={monoInputClassName}
             placeholder={m.friend_link_placeholder_contact_email_default()}
           />

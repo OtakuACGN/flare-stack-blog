@@ -1,8 +1,9 @@
 import { ClientOnly } from "@tanstack/react-router";
 import { X } from "lucide-react";
 import type React from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { useDialogFocus } from "@/hooks/use-dialog-focus";
 import { useDelayUnmount } from "@/hooks/use-delay-unmount";
 import { m } from "@/paraglide/messages";
 
@@ -25,6 +26,15 @@ const FuwariInsertModalInternal: React.FC<FuwariInsertModalProps> = ({
   const shouldRender = useDelayUnmount(isMounted, 400); // Slightly faster than original
   const [activeType, setActiveType] = useState<ModalType>(type);
   const [inputUrl, setInputUrl] = useState(initialUrl);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const titleId = useId();
+  const inputId = useId();
+  const { handleDialogKeyDown } = useDialogFocus({
+    isOpen: isMounted,
+    dialogRef,
+    initialFocusRef: inputRef,
+  });
 
   useEffect(() => {
     if (type) {
@@ -54,13 +64,22 @@ const FuwariInsertModalInternal: React.FC<FuwariInsertModalProps> = ({
       }`}
     >
       {/* Backdrop */}
-      <div
+      <button
+        type="button"
+        tabIndex={-1}
+        aria-label={m.common_close()}
         className="absolute inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-sm"
         onClick={onClose}
       />
 
       {/* Modal Content */}
       <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+        onKeyDown={handleDialogKeyDown}
         className={`
           relative w-full max-w-md fuwari-card-base p-0
           flex flex-col transform transition-all duration-300
@@ -69,13 +88,15 @@ const FuwariInsertModalInternal: React.FC<FuwariInsertModalProps> = ({
       >
         {/* Header */}
         <div className="px-6 pt-6 pb-4 flex items-center justify-between">
-          <h2 className="text-lg font-bold fuwari-text-90">
+          <h2 id={titleId} className="text-lg font-bold fuwari-text-90">
             {activeType === "LINK"
               ? m.comments_editor_modal_link_title()
               : m.comments_editor_modal_image_title()}
           </h2>
           <button
+            type="button"
             onClick={onClose}
+            aria-label={m.common_close()}
             className="p-1 -mr-1 fuwari-text-30 hover:fuwari-text-75 transition-colors"
           >
             <X size={18} strokeWidth={1.5} />
@@ -85,12 +106,17 @@ const FuwariInsertModalInternal: React.FC<FuwariInsertModalProps> = ({
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="px-6 pb-4 flex flex-col gap-4">
           <div className="space-y-2">
-            <label className="text-sm font-medium fuwari-text-75 ml-1">
+            <label
+              htmlFor={inputId}
+              className="text-sm font-medium fuwari-text-75 ml-1"
+            >
               {activeType === "IMAGE"
                 ? m.comments_editor_modal_image_label()
                 : m.comments_editor_modal_link_label()}
             </label>
             <input
+              ref={inputRef}
+              id={inputId}
               type="url"
               autoFocus
               value={inputUrl}
@@ -117,6 +143,7 @@ const FuwariInsertModalInternal: React.FC<FuwariInsertModalProps> = ({
             {m.comments_editor_modal_cancel()}
           </button>
           <button
+            type="button"
             onClick={() => handleSubmit()}
             disabled={
               activeType === "LINK"

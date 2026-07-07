@@ -48,6 +48,7 @@ const TooltipTrigger = React.forwardRef<
 
   return (
     <button
+      type="button"
       ref={ref as React.Ref<HTMLButtonElement>}
       className={cn(className)}
       {...props}
