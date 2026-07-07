@@ -68,31 +68,23 @@ export function PublicLayout({
         </div>
       </div>
 
-      {/* Banner uses a blurred fill layer plus an uncropped foreground image. */}
+      {/* Banner background image */}
       <div
         className="absolute left-0 right-0 top-0 z-10 overflow-hidden transition-[height] duration-300 ease-in-out select-none bg-[var(--fuwari-page-bg)]"
         style={{ height: bannerHeightCss }}
       >
         {homeBg ? (
-          <>
-            <img
-              src={homeBg}
-              alt=""
-              aria-hidden="true"
-              decoding="async"
-              className="absolute inset-0 h-full w-full scale-105 object-cover blur-2xl opacity-50 dark:opacity-40"
-            />
-            <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-[var(--fuwari-page-bg)] dark:from-black/30 dark:via-black/10" />
-            <div className="relative z-10 flex h-full w-full items-center justify-center p-2 sm:p-4 md:p-6 lg:p-8">
-              <img
-                src={homeBg}
-                alt="banner"
-                fetchPriority="high"
-                decoding="async"
-                className="h-full w-full object-contain"
-              />
-            </div>
-          </>
+          <img
+            src={homeBg}
+            alt=""
+            aria-hidden="true"
+            fetchPriority={isHomePage ? "high" : undefined}
+            decoding="async"
+            className="h-full w-full object-cover transition-[object-position] duration-300 ease-in-out"
+            style={{
+              objectPosition: isHomePage ? "40% 35%" : "40% 20%",
+            }}
+          />
         ) : null}
       </div>
 
