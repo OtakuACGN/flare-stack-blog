@@ -4,6 +4,7 @@ import {
   FUWARI_BANNER_HEIGHT_PAGE,
   getFuwariBannerHeightCss,
   getFuwariBannerImageStyle,
+  getFuwariBannerScrollThresholdPx,
 } from "./banner-model";
 
 describe("fuwari banner model", () => {
@@ -60,6 +61,41 @@ describe("fuwari banner model", () => {
       "--fuwari-banner-mobile-position": "35% 45%",
       "--fuwari-banner-mobile-origin": "35% 45%",
       "--fuwari-banner-mobile-scale": "1.08",
+    });
+  });
+
+  describe("getFuwariBannerScrollThresholdPx", () => {
+    it("returns pixel threshold for home banner with default root font", () => {
+      const threshold = getFuwariBannerScrollThresholdPx({
+        banner: FUWARI_BANNER_HEIGHT_HOME,
+        viewportHeight: 900,
+      });
+      expect(threshold).toBeCloseTo(378, 0);
+    });
+
+    it("clamps to max when viewport is very tall", () => {
+      const threshold = getFuwariBannerScrollThresholdPx({
+        banner: FUWARI_BANNER_HEIGHT_HOME,
+        viewportHeight: 2000,
+      });
+      expect(threshold).toBeCloseTo(432, 0);
+    });
+
+    it("clamps to min when viewport is very short", () => {
+      const threshold = getFuwariBannerScrollThresholdPx({
+        banner: FUWARI_BANNER_HEIGHT_PAGE,
+        viewportHeight: 300,
+      });
+      expect(threshold).toBeCloseTo(48, 0);
+    });
+
+    it("respects custom rootFontSize", () => {
+      const threshold = getFuwariBannerScrollThresholdPx({
+        banner: FUWARI_BANNER_HEIGHT_HOME,
+        rootFontSize: 20,
+        viewportHeight: 800,
+      });
+      expect(threshold).toBeCloseTo(284, 0);
     });
   });
 });

@@ -5,24 +5,19 @@ import { ThemeToggle } from "@/components/common/theme-toggle";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { NavOption, UserInfo } from "@/features/theme/contract/layouts";
 import { m } from "@/paraglide/messages";
+import {
+  type FuwariBannerHeightConfig,
+  getFuwariBannerScrollThresholdPx,
+} from "../banner-model";
 import { LanguageSwitcher } from "./language-switcher";
-
-export interface BannerHeightConfig {
-  minRem: number;
-  preferredVh: number;
-  maxRem: number;
-}
 
 interface NavbarProps {
   navOptions: Array<NavOption>;
   onMenuClick: () => void;
   isLoading?: boolean;
   user?: UserInfo;
-  bannerHeight: BannerHeightConfig;
+  bannerHeight: FuwariBannerHeightConfig;
 }
-
-const NAVBAR_HEIGHT_REM = 4.5;
-const MAIN_OVERLAP_REM = 3.5;
 
 export function Navbar({
   onMenuClick,
@@ -40,18 +35,11 @@ export function Navbar({
         Number.parseFloat(
           window.getComputedStyle(document.documentElement).fontSize,
         ) || 16;
-      const preferredHeightPx =
-        window.innerHeight * (bannerHeight.preferredVh / 100);
-      const bannerHeightPx = Math.min(
-        Math.max(bannerHeight.minRem * rootFontSize, preferredHeightPx),
-        bannerHeight.maxRem * rootFontSize,
-      );
-      const navbarHeightPx = NAVBAR_HEIGHT_REM * rootFontSize;
-      const mainOverlapPx = MAIN_OVERLAP_REM * rootFontSize;
-      const extraPaddingPx = rootFontSize;
-
-      const threshold =
-        bannerHeightPx - navbarHeightPx - mainOverlapPx - extraPaddingPx;
+      const threshold = getFuwariBannerScrollThresholdPx({
+        banner: bannerHeight,
+        rootFontSize,
+        viewportHeight: window.innerHeight,
+      });
       const scrollTop = window.scrollY || document.documentElement.scrollTop;
 
       setIsHidden(scrollTop >= threshold);
@@ -59,7 +47,6 @@ export function Navbar({
 
     window.addEventListener("scroll", handleScroll, { passive: true });
     window.addEventListener("resize", handleScroll);
-    // Initial check
     handleScroll();
 
     return () => {

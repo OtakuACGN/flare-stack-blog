@@ -32,6 +32,34 @@ export function getFuwariBannerHeightCss({
   return `clamp(${minRem}rem, ${preferredVh}vh, ${maxRem}rem)`;
 }
 
+/** Navbar auto-hide scroll threshold in pixels. */
+export function getFuwariBannerScrollThresholdPx({
+  banner,
+  rootFontSize = 16,
+  viewportHeight,
+  navbarHeightRem = 4.5,
+  mainOverlapRem = 3.5,
+  extraPaddingRem = 1,
+}: {
+  banner: FuwariBannerHeightConfig;
+  rootFontSize?: number;
+  viewportHeight: number;
+  navbarHeightRem?: number;
+  mainOverlapRem?: number;
+  extraPaddingRem?: number;
+}) {
+  const preferredHeightPx = viewportHeight * (banner.preferredVh / 100);
+  const bannerHeightPx = Math.min(
+    Math.max(banner.minRem * rootFontSize, preferredHeightPx),
+    banner.maxRem * rootFontSize,
+  );
+  const navbarHeightPx = navbarHeightRem * rootFontSize;
+  const mainOverlapPx = mainOverlapRem * rootFontSize;
+  const extraPaddingPx = extraPaddingRem * rootFontSize;
+
+  return bannerHeightPx - navbarHeightPx - mainOverlapPx - extraPaddingPx;
+}
+
 export function getFuwariBannerImageStyle(
   crop: FuwariBannerCrop | undefined,
   variant: FuwariBannerVariant,
