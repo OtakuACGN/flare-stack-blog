@@ -1,57 +1,21 @@
 import { useLocation, useRouteContext } from "@tanstack/react-router";
-import type { CSSProperties } from "react";
 import { useState } from "react";
 import { BgmPlayer } from "@/components/content/bgm-player";
-import {
-  DEFAULT_FUWARI_BANNER_CROP,
-  type FuwariBannerCrop,
-} from "@/features/config/site-config.schema";
 import type { PublicLayoutProps } from "@/features/theme/contract/layouts";
+import {
+  FUWARI_BANNER_HEIGHT_HOME,
+  FUWARI_BANNER_HEIGHT_PAGE,
+  getFuwariBannerHeightCss,
+  getFuwariBannerImageStyle,
+} from "../banner-model";
 import { BackToTop } from "../components/control/back-to-top";
 import { Sidebar } from "../components/sidebar";
 import { Footer } from "./footer";
 import { MobileMenu } from "./mobile-menu";
-import { type BannerHeightConfig, Navbar } from "./navbar";
+import { Navbar } from "./navbar";
 
-const BANNER_HEIGHT_HOME = {
-  minRem: 18,
-  preferredVh: 58,
-  maxRem: 36,
-} as const satisfies BannerHeightConfig;
-const BANNER_HEIGHT_PAGE = {
-  minRem: 12,
-  preferredVh: 32,
-  maxRem: 22,
-} as const satisfies BannerHeightConfig;
 const MAIN_OVERLAP_REM = 3.5;
 const NAVBAR_HEIGHT_REM = 4.5;
-
-function getBannerHeightCss({
-  minRem,
-  preferredVh,
-  maxRem,
-}: BannerHeightConfig) {
-  return `clamp(${minRem}rem, ${preferredVh}vh, ${maxRem}rem)`;
-}
-
-function getBannerImageStyle(
-  crop: FuwariBannerCrop | undefined,
-  variant: "home" | "page",
-) {
-  const desktop =
-    crop?.[variant]?.desktop ?? DEFAULT_FUWARI_BANNER_CROP[variant].desktop;
-  const mobile =
-    crop?.[variant]?.mobile ?? DEFAULT_FUWARI_BANNER_CROP[variant].mobile;
-
-  return {
-    "--fuwari-banner-desktop-position": `${desktop.x}% ${desktop.y}%`,
-    "--fuwari-banner-desktop-origin": `${desktop.x}% ${desktop.y}%`,
-    "--fuwari-banner-desktop-scale": String(desktop.scale),
-    "--fuwari-banner-mobile-position": `${mobile.x}% ${mobile.y}%`,
-    "--fuwari-banner-mobile-origin": `${mobile.x}% ${mobile.y}%`,
-    "--fuwari-banner-mobile-scale": String(mobile.scale),
-  } as CSSProperties;
-}
 
 export function PublicLayout({
   children,
@@ -64,8 +28,10 @@ export function PublicLayout({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
   const isHomePage = location.pathname === "/";
-  const bannerHeight = isHomePage ? BANNER_HEIGHT_HOME : BANNER_HEIGHT_PAGE;
-  const bannerHeightCss = getBannerHeightCss(bannerHeight);
+  const bannerHeight = isHomePage
+    ? FUWARI_BANNER_HEIGHT_HOME
+    : FUWARI_BANNER_HEIGHT_PAGE;
+  const bannerHeightCss = getFuwariBannerHeightCss(bannerHeight);
   const homeBg = siteConfig.theme.fuwari.homeBg?.trim();
   const bannerVariant = isHomePage ? "home" : "page";
 
@@ -106,7 +72,7 @@ export function PublicLayout({
             fetchPriority={isHomePage ? "high" : undefined}
             decoding="async"
             className="fuwari-banner-image h-full w-full object-cover transition-[object-position,transform] duration-300 ease-in-out"
-            style={getBannerImageStyle(
+            style={getFuwariBannerImageStyle(
               siteConfig.theme.fuwari.banner,
               bannerVariant,
             )}
